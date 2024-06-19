@@ -1,3 +1,4 @@
+
 declare interface streamDataType {
   endTime: string;
   artistName: string;
@@ -110,3 +111,17 @@ declare type promiseUser = {
   external_urls: { [key: string | number]: string };
   followers: { [key: string | number]: string | number };
 };
+
+ declare interface Dispatch<A extends Action = UnknownAction> {
+  <T extends A>(action: T, ...extraArgs: any[]): T;
+}
+
+declare interface UnknownAction extends Action {
+  [extraProps: string]: unknown;
+}
+
+declare type actionProp = {
+  payload: { [key: string | number | symbol]: any };
+  type: string;
+};
+

@@ -46,9 +46,9 @@ const [radarData, setRadarData] = useState<any>();
             <PolarComponent data={radarData}/>
           </div>
         </div>
-        <h1 className="text-lg  font-bold text-white-1">Top Artists</h1>
+        <h1 className="text-lg  font-bold text-white-1">Top Tracks</h1>
 
-        <div className="podcast_grid mb-10">
+        <div className="flex-wrap justify-center flex gap-5 mb-10">
           {topTracks?.map(({ msPlayed, trackName: name, plays }, index) => (
             <PodcastCard
               key={index}

@@ -1,7 +1,7 @@
+'use client'
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import axios from "axios";
-import gsap from "gsap";
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

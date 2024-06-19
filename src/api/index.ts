@@ -1,4 +1,5 @@
 "use client";
+import { ERROR } from "@/constants";
 import { getCookie } from "@/lib/utils";
 import axios from "axios";
 import dotenv from "dotenv";
@@ -95,12 +96,12 @@ const getRefreshToken = async (email: string) => {
     const data = await promiseData.json();
     return data.refresh_token;
   } catch (error: any) {
-    console.warn(error);
+    console.warn(error, "error in getrefreshToken");
     // throw new Error(error)
   }
 };
 
-const renewAccessToken = async (refreshToken: string) => {
+const renewAccessToken = async (refreshToken: string, email: string) => {
   // const refreshToken = localStorage.getItem('refresh_token');
   const url = "https://accounts.spotify.com/api/token";
 
@@ -117,19 +118,47 @@ const renewAccessToken = async (refreshToken: string) => {
   };
   const data = await fetch(url, payload);
   const response = await data.json();
+  if (!!response.refresh_token) {
+    const payload = {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email,
+      }),
+    };
+
+    await fetch("http://localhost:3000/api/refresh", payload);
+  }
 
   if (!!response.access_token) {
     cookie.set("_gtPaotwcsA", response.access_token, { expires: 3600 * 1000 });
-    cookie.set("_gtPaotwcsR", response.refresh_token, {
-      expires: 1000 * 60 * 60 * 24 * 30,
-    });
+
     return true;
   }
 
   return false;
 };
 
-export async function getProfile(): Promise<any> {
+const rectifyToken = async (error: any) => {
+  if (error?.response?.data?.error?.status === 401) {
+    const userEmail = JSON.parse(localStorage.getItem("user")!)?.email;
+    if (
+      !userEmail ||
+      userEmail === undefined ||
+      userEmail === null ||
+      userEmail === "undefined"
+    )
+      alert("Please Login again");
+
+    const refresh_token = await getRefreshToken(userEmail);
+    renewAccessToken(refresh_token, userEmail);
+  }
+};
+export async function getProfile(
+  dispatch?: React.Dispatch<UnknownAction>
+): Promise<any> {
   try {
     let accessToken = getCookie("_gtPaotwcsA");
     if (!accessToken) return;
@@ -140,19 +169,11 @@ export async function getProfile(): Promise<any> {
     });
     return response.data;
   } catch (error: any) {
-    if (error?.response?.data?.error?.status === 401) {
-      const userEmail = JSON.parse(localStorage.getItem("user")!)?.email;
-      if (
-        !userEmail ||
-        userEmail === undefined ||
-        userEmail === null ||
-        userEmail === "undefined"
-      )
-        alert("Please Login again");
-
-      const refresh_token = await getRefreshToken(userEmail);
-      renewAccessToken(refresh_token);
+    if (!!dispatch) {
+      dispatch({ type: ERROR, payload: "Please Refresh the page!" });
     }
+    console.log(error);
+    rectifyToken(error);
   }
 }
 
@@ -172,7 +193,7 @@ export async function fetchRecentTracks(): Promise<any> {
     return recentTracks;
   } catch (error: any) {
     console.error("Error fetching recently played tracks:", error.message);
-    throw error;
+    rectifyToken(error);
   }
 }
 export async function fetchTopTracks(): Promise<any> {
@@ -215,3 +236,66 @@ export async function fetchTopArtists(): Promise<any> {
     throw error;
   }
 }
+
+export const searchSpotify = async (
+  query: string,
+  setsearchData: React.Dispatch<React.SetStateAction<{ [key: string]: any }>>,
+  dispatch?: React.Dispatch<UnknownAction>
+) => {
+  console.log(query, "search spotify");
+
+  const q = query.split(" ").join("+");
+  try {
+    let accessToken = getCookie("_gtPaotwcsA");
+    if (!accessToken) return;
+    // const querystring = `q` + query.split(" ").join("%20");
+    const response = await axios.get(
+      `https://api.spotify.com/v1/search?q=${q}&type=track%2Cartist%2Calbum`,
+      {
+        headers: {
+          Authorization: "Bearer " + accessToken,
+        },
+      }
+    );
+
+    const data = await response.data;
+    console.log(data, "search");
+    setsearchData(data);
+    return data;
+  } catch (error: any) {
+    if (!!dispatch) {
+      dispatch({
+        type: ERROR,
+        payload: error.description || "Please Refresh the page!",
+      });
+    }
+    // setsearchData({ error: "Error occured" });
+    rectifyToken(error);
+  }
+};
+
+export const getuserTopItems = async (
+  type: string,
+  time_range: string,
+  limit: number,
+  offset: number
+) => {
+  try {
+    let accessToken = getCookie("_gtPaotwcsA");
+    if (!accessToken) return;
+
+    const response = await axios.get(
+      `https://api.spotify.com/v1/me/top/?type=${type}&time_range=${time_range}&limit=${limit}&offset=${offset}`,
+      {
+        headers: {
+          Authorization: "Bearer " + accessToken,
+        },
+      }
+    );
+
+    const data = await response.data();
+    return data;
+  } catch (error) {
+    rectifyToken(error);
+  }
+};

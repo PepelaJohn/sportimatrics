@@ -7,7 +7,10 @@
   padding: 0;
   box-sizing: border-box;
 }
-
+.translateandFade {
+  transform: translateY(110px);
+  opacity: 0;
+}
 a {
   text-decoration: none !important;
   color: inherit !important;

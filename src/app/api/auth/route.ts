@@ -28,12 +28,6 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json({ status: 200 });
   } catch (error) {
     console.log(error);
-    throw new Error(error as string);
+    // throw new Error(error as string);
   }
-};
-
-export const config = {
-  api: {
-    bodyParser: true,
-  },
 };

@@ -1,0 +1,20 @@
+'use client'
+import {  ERROR, SUCCESS } from "@/constants";
+export default (
+  popup = {
+    show: false,
+    error: false,
+    message: "",
+  },
+  action:actionProp
+) => {
+  switch (action.type) {
+    case ERROR:
+      return { show: true, error: true, message: action.payload };
+    case SUCCESS:
+      return { show: true, error: false, message: action.payload };
+    
+    default:
+      return popup;
+  }
+};
