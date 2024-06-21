@@ -1,3 +1,4 @@
+import Footer from "@/components/Footer";
 
 
 export default function RootLayout({
@@ -8,6 +9,7 @@ export default function RootLayout({
   
 
   return (
+   <>
     <div className="relative flex flex-col">
       <main className="relative flex bg-black-3">
         <section className="flex min-h-screen  flex-1 flex-col ">
@@ -18,5 +20,7 @@ export default function RootLayout({
         
       </main>
     </div>
+    <Footer/>
+   </>
   );
 }

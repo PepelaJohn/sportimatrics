@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { CLOSE_DISPLAY } from "@/constants";
 import Popup from "./Popup";
+import DropdownMenuDemo from "./DropDown";
 
 const NavBar = () => {
   const [sidebar, setSideBar] = useState<boolean>(false);
@@ -38,8 +39,6 @@ const NavBar = () => {
 
       timoeoutRef.current = setTimeout(() => {
         dispatch({ type: CLOSE_DISPLAY });
-       
-        
       }, 2000);
     }
 
@@ -94,9 +93,9 @@ const NavBar = () => {
             <Logo></Logo>
           </Link>
           {loggedIn && (
-            <div className="flex-1 justify-end hidden  text-white-2 text-[10px]  easeinOut uppercase gap-5 md:flex items-center">
+            <div className="flex-1 justify-end hidden   text-[10px]  easeinOut uppercase gap-5 md:flex items-center">
               {navlinks.map((link) => (
-                <p key={link + "x"} className="hover:text-white-1  easeinOut">
+                <p key={link + "x"} className={`hover:text-white-1  easeinOut ${link.split(" ").join("-").toLowerCase() === pathname ? "text-white-1":"text-white-2"}`}>
                   <Link
                     onClick={() => setSideBar(false)}
                     key={link}
@@ -127,22 +126,23 @@ const NavBar = () => {
             </div>
           )}
 
-          <Link
-            className={`ml-5 hidden text-[10px]  ${
-              !loggedIn
-                ? "bg-green-400  rounded-full h-8  flex justify-center items-center px-5 text-black-1 "
-                : " !text-white-1 "
-            }  !hover:text-white-1 easeinOut ml-auto text-white-1 uppercase md:flex`}
-            href={loggedIn ? "/profile" : "/auth"}
-          >
-            {loggedIn ? (
-              <span className="w-8 h-8 rounded-full ml-5 bg-black-5 text-sm flex items-center justify-center">
-                {!!user?.display_name ? getInitials(user?.display_name!) : ""}
-              </span>
-            ) : (
-              "Login"
-            )}
-          </Link>
+          <DropdownMenuDemo>
+            <span
+              className={`ml-5 hidden text-[10px] cursor-pointer  ${
+                !loggedIn
+                  ? "bg-green-400  rounded-full h-8  flex justify-center items-center px-5 text-black-1 "
+                  : " !text-white-1 "
+              }  !hover:text-white-1 easeinOut ml-auto text-white-1 uppercase md:flex`}
+            >
+              {loggedIn ? (
+                <span className="w-8 h-8 rounded-full ml-5 bg-black-5 text-sm flex cursor-pointer items-center justify-center">
+                  {!!user?.display_name ? getInitials(user?.display_name!) : ""}
+                </span>
+              ) : (
+                "Login"
+              )}
+            </span>
+          </DropdownMenuDemo>
 
           <div className="flex-1 max-md:flex hidden  text-white-1  easeinOut uppercase items-center justify-end">
             <button

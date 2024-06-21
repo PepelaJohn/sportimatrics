@@ -112,12 +112,12 @@ const Home = () => {
                   SPOTIMETRICS
                 </h1>
                 <p className="desc max-md:text-sm max-[540px]:text-xs">
-                  Track all your listening data <br />
+                Uncover Your  Listening Stats <br />
                   <span className="readmore md:my-1 cursor-pointer">
-                    Listen to all your music
+                  Relive Your Music Moments
                   </span>
                   <br />
-                  All in one place!!
+                  Explore Your Personalized Music Journey!!
                 </p>
 
                 <a
