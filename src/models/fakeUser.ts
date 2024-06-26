@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import {GridFSBucket} from 'mongodb'
 const userSchema = new mongoose.Schema(
   {
     display_name: String,

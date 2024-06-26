@@ -74,9 +74,9 @@ const NavBar = () => {
   let navlinks = [
     "Top Tracks",
     "Top Artists",
-    "Top Genres",
+    // "Top Genres",
     "Recent Tracks",
-    "Podcasts",
+    "upload",
   ];
   return (
     <>
@@ -95,7 +95,7 @@ const NavBar = () => {
           {loggedIn && (
             <div className="flex-1 justify-end hidden   text-[10px]  easeinOut uppercase gap-5 md:flex items-center">
               {navlinks.map((link) => (
-                <p key={link + "x"} className={`hover:text-white-1  easeinOut ${link.split(" ").join("-").toLowerCase() === pathname ? "text-white-1":"text-white-2"}`}>
+                <p key={link + "x"} className={`  easeinOut ${link === 'upload' ? "bg-yellow-500 h-6  flex items-center px-3 rounded-full":"text-white-2 hover:text-white-1"}`}>
                   <Link
                     onClick={() => setSideBar(false)}
                     key={link}
@@ -160,8 +160,8 @@ const NavBar = () => {
             <div className="flex items-center justify-end px-5 text-[30px] h-[100px]">
               <button onClick={() => setSideBar(false)}>&times;</button>
             </div>
-            <div className="flex-1 flex flex-col text-sm leading-10 gap-5 xl items-start pl-10">
-              <Link onClick={() => setSideBar(false)} href={"/"}>
+            <div className="flex-1 flex flex-col text-sm leading-10 gap-5 xl items-start pl-">
+              <Link className="capitalize hover:bg-slate-900 w-full pl-3 easeinOut" onClick={() => setSideBar(false)} href={"/"}>
                 Home
               </Link>
               {navlinks.map((link, i) => (
@@ -169,14 +169,15 @@ const NavBar = () => {
                   onClick={() => setSideBar(false)}
                   key={i}
                   href={link.split(" ").join("-").toLowerCase()}
+                  className="capitalize hover:bg-slate-900 w-full pl-3 easeinOut"
                 >
                   {link}
                 </Link>
               ))}
-              <Link href={"/profile"}>Profile</Link>
+              <Link className="capitalize hover:bg-slate-900 w-full pl-3 easeinOut" href={"/profile"}>Profile</Link>
               {loggedIn && (
                 <div className="mt-auto flex items-center w-full justify-between pr-10 mb-5">
-                  <Link href={"/logout"}>Logout</Link>
+                  <Link className="pl-3" href={"/logout"}>Logout</Link>
                   <IoMdLogOut className="cursor-pointer"></IoMdLogOut>
                 </div>
               )}
