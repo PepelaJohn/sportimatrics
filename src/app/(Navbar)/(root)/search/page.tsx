@@ -14,8 +14,6 @@ export default function TopSongs({
 }) {
   const dispatch = useDispatch();
 
-  const [radarData, setRadarData] = useState<any>();
-
   const [searchData, setsearchData] = useState<{ [key: string]: any }>({
     name: "",
   });

@@ -1,22 +1,27 @@
 "use client";
 import dotenv from "dotenv";
 dotenv.config();
-import { generateRandomString, authUrl, pkce_challenge_from_verifier } from "@/api";
+import {
+  generateRandomString,
+  authUrl,
+  pkce_challenge_from_verifier,
+} from "@/api";
 import { useEffect } from "react";
 import { getCookie } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import {SignpostIcon as Spotify} from 'lucide-react'
 const scope =
   "user-read-private user-read-email user-read-playback-state  playlist-read-private playlist-read-collaborative user-follow-read user-top-read user-read-recently-played";
 const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID!;
 const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_URI!;
 
 const page = () => {
-  const router = useRouter()
-  useEffect(()=>{
-    if (!!getCookie('_gtPaotwcsA')) {
+  const router = useRouter();
+  useEffect(() => {
+    if (!!getCookie("_gtPaotwcsA")) {
       router.push("/");
     }
-  },[])
+  }, []);
   const LoginWithSpotify = async () => {
     let codeVerifier = localStorage.getItem("code_verifier");
 
@@ -24,13 +29,9 @@ const page = () => {
       codeVerifier = generateRandomString(64);
       localStorage.setItem("code_verifier", codeVerifier);
     }
-    
-   
-    
-    const codeChallenge = await pkce_challenge_from_verifier(codeVerifier)
 
-  
-    
+    const codeChallenge = await pkce_challenge_from_verifier(codeVerifier);
+
     const querystring = `?response_type=code&client_id=${clientId}&scope=${scope
       .split(" ")
       .join(
@@ -40,25 +41,16 @@ const page = () => {
     console.log(codeVerifier);
 
     window.location = url;
-
-    
   };
   return (
     <div className="nav-height  w-full flex-col min-h-[50vh] h-full flex  items-center justify-center">
       <div className="w-[300px] flex flex-col gap-5">
-        <button
-          onClick={LoginWithSpotify}
-          className="w-full h-[50px] rounded-xl text-sm bg-green-400"
-        >
-          Login with Spotify
+        <button onClick={LoginWithSpotify} className=" text-sm bg-green-400 button">
+          <Spotify/>
+          Continue with Spotify
         </button>
-        <button
-          disabled
-          aria-disabled
-          className="w-full h-[50px] rounded-xl text-sm bg-red-400"
-        >
-          Login with Apple Music
-        </button>
+
+        
       </div>
     </div>
   );

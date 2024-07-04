@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -6,11 +6,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const animateHomepage =  ()=>{
-  
-}
+export const animateHomepage = () => {};
 
 import streamdata from "@/assets/StreamingHistory_music_1.json";
+import { ERROR, SUCCESS } from "@/constants";
 export { streamdata };
 
 export const streamData = [
@@ -77,28 +76,28 @@ export const streamData = [
 ];
 export function getInitials(name: string): string {
   // Split the name by spaces to get individual words
-  const words = name.trim().split(' ');
+  const words = name.trim().split(" ");
 
   // Initialize an empty string to hold the initials
-  let initials = '';
+  let initials = "";
 
   // Loop through the words and add the first character of each word to the initials
   for (let i = 0; i < words.length && initials.length < 2; i++) {
-      if (words[i].length > 0) {
-          initials += words[i][0].toUpperCase();
-      }
+    if (words[i].length > 0) {
+      initials += words[i][0].toUpperCase();
+    }
   }
 
   // Return the initials
   return initials;
 }
-export function getCookie(cname:string) {
+export function getCookie(cname: string) {
   let name = cname + "=";
   let decodedCookie = decodeURIComponent(window.document.cookie);
-  let ca = decodedCookie.split(';');
-  for(let i = 0; i <ca.length; i++) {
+  let ca = decodedCookie.split(";");
+  for (let i = 0; i < ca.length; i++) {
     let c = ca[i];
-    while (c.charAt(0) == ' ') {
+    while (c.charAt(0) == " ") {
       c = c.substring(1);
     }
     if (c.indexOf(name) == 0) {
@@ -113,6 +112,50 @@ const isaVailable = (arr: artistDataType[], k: string) => {
     if (artist.name === k) return true;
   }
   return false;
+};
+
+export const processImage = (
+  e: any,
+  setFormData: React.SetStateAction<any>,
+  formData: any,
+
+  dispatch: Dispatch<UnknownAction>
+) => {
+  // get the files
+  let files = e.target.files;
+
+  for (var i = 0; i < files.length; i++) {
+    let file = files[i];
+
+    let reader = new FileReader();
+
+    // Convert the file to base64 text
+    reader.readAsDataURL(file);
+
+    // on reader load somthing...
+    reader.readAsDataURL(file);
+
+    reader.onload = async () => {
+      // Make a fileInfo Object
+      let fileInfo = {
+        name: file.name,
+        type: file.type,
+        size: Math.round(file.size / 1000) + " kB",
+        base64: reader.result,
+        file: file,
+      };
+      // console.log(fileInfo.type);
+      if (fileInfo.type !== "application/json") {
+        dispatch({ type: ERROR, payload: "Invalid File Type" });
+        return;
+      }
+
+      // setFormData({ ...formData, file: fileInfo.base64 });
+      // setProgress(100);
+      // await uploadToDB({ file: fileInfo.base64 });
+      console.log(fileInfo.base64);
+    };
+  }
 };
 
 const getSingleListeningTime = (
@@ -171,7 +214,10 @@ const isTrackAvailable = (tracksData: TracksDtype[], key: string) => {
   }
   return false;
 };
-export const getTopTracks = (data: streamDataType[], sort='plays'): TracksDtype[] => {
+export const getTopTracks = (
+  data: streamDataType[],
+  sort = "plays"
+): TracksDtype[] => {
   let tracksData: TracksDtype[] = [];
   for (let stream of data) {
     if (isTrackAvailable(tracksData, stream.artistName)) {
@@ -196,12 +242,11 @@ export const getTopTracks = (data: streamDataType[], sort='plays'): TracksDtype[
       tracksData.push(dt);
     }
   }
-  tracksData.sort((a:TracksDtype, b:TracksDtype) => b[sort as keyof TracksDtype] - a[sort as keyof TracksDtype]);
-  return tracksData ;
+  tracksData.sort(
+    (a: TracksDtype, b: TracksDtype) =>
+      b[sort as keyof TracksDtype] - a[sort as keyof TracksDtype]
+  );
+  return tracksData;
 };
 
-
-
 // =============================Functions to fetch recent tracks from Spotify API======================================
-
-

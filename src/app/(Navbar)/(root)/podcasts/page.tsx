@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full flex flex-col text-gray-100">
       <Head>
-        <title>SpotiMetrics</title>
+        <title>Podcasts</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

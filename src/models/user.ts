@@ -19,6 +19,17 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    json: {
+      type: [
+        {
+          endTime: { type: String, required: true },
+          artistName: { type: String, required: true },
+          trackName: { type: String, required: true },
+          msPlayed: { type: Number, required: true },
+        },
+      ],
+      default: [],
+    },
     refresh_token: {
       type: String,
       default: "",

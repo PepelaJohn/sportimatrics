@@ -1,9 +1,9 @@
-import { Grid } from "gridfs-stream";
+import  Grid , {Grid as GridType} from "gridfs-stream";
 import mongoose from "mongoose";
 
 const connection = { isConnected: false };
 
-let gfs: Grid | null = null;
+
 const connectDB = async () => {
   const mongoURI = process.env.MONGO_URI!;
   try {
@@ -13,17 +13,10 @@ const connectDB = async () => {
     }
     console.log("Connecting to ", mongoURI);
     const db = await mongoose.connect(mongoURI);
-    if (!gfs) {
-      const conn = mongoose.connection;
-      conn.once("open", () => {
-        gfs = new Grid();
-
-        gfs.collection("uploads");
-      });
-    }
+    
     connection.isConnected = !!db.connections[0].readyState;
   } catch (error: any) {
     throw new Error(error);
   }
 };
-export { connectDB, gfs };
+export { connectDB };

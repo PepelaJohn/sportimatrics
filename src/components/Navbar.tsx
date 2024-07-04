@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { CLOSE_DISPLAY } from "@/constants";
 import Popup from "./Popup";
 import DropdownMenuDemo from "./DropDown";
+import Toggle from "./Toggle";
 
 const NavBar = () => {
   const [sidebar, setSideBar] = useState<boolean>(false);
@@ -92,6 +93,7 @@ const NavBar = () => {
           >
             <Logo></Logo>
           </Link>
+          {/* <Toggle className="mr-2 h-4 ml-5 w-4" /> */}
           {loggedIn && (
             <div className="flex-1 justify-end hidden   text-[10px]  easeinOut uppercase gap-5 md:flex items-center">
               {navlinks.map((link) => (
@@ -117,11 +119,12 @@ const NavBar = () => {
               >
                 <input
                   onChange={(e) => setSearchParams(e.target.value)}
-                  className="bg-transparent flex-1 !text-xs outline-none border-none w-[100px]"
+                  className="bg-transparent flex-1 !text-xs outline-none border-none text-white-2 w-[100px]"
                   type="text"
                   value={searchParams!}
+                  placeholder="Search"
                 />
-                <MdSearch className="!text-[15px] cursor-pointer   h-full flex items-center " />
+                <MdSearch className="!text-[15px] text-white-2 cursor-pointer   h-full flex items-center " />
               </form>
             </div>
           )}

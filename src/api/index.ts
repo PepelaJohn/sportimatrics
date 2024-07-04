@@ -299,3 +299,26 @@ export const getuserTopItems = async (
     rectifyToken(error);
   }
 };
+
+export const uploadToDB = async (formData: { [key: string]: any }) => {
+  try {
+    const payload = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        formData,
+      }),
+    };
+
+    const promiseData = await fetch(
+      "http://localhost:3000/api/upload",
+      payload
+    );
+    const data = await promiseData.json();
+    console.log(data);
+  } catch (error: any) {
+    console.table(error);
+  }
+};

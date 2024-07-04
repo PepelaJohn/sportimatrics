@@ -35,6 +35,7 @@ import React from "react";
 import { MdWhatsapp } from "react-icons/md";
 import { CgFacebook, CgTwitter } from "react-icons/cg";
 import { FiGithub } from "react-icons/fi";
+import Toggle from "./Toggle";
 
 export default function DropdownMenuDemo({
   children,
@@ -51,12 +52,12 @@ export default function DropdownMenuDemo({
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />
             <span>Profile</span>
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+            {/* <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut> */}
           </DropdownMenuItem>
           <DropdownMenuItem>
             <CreditCard className="mr-2 h-4 w-4" />
             <span>Billing</span>
-            <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+            {/* <DropdownMenuShortcut>⌘B</DropdownMenuShortcut> */}
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
@@ -109,10 +110,16 @@ export default function DropdownMenuDemo({
           </span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DropdownMenuItem >
+          {/* <Toggle className="mr-2 h-4 w-4" /> */}
+          <span className="flex items-center gap-1">
+           
+          </span>
+        </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
-          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+          {/* <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut> */}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,71 +1,78 @@
+import multer from "multer";
+import { Readable } from "stream";
+import { connectDB } from "@/lib/connectToDb";
+import Track, { ITrack } from "@/models/Track"; // Your Mongoose model
+import User from "@/models/user";
 // pages/api/upload.ts
-import { NextApiRequest, NextApiResponse } from "next";
-import { connectDB as connect, gfs } from "@/lib/connectToDb";
-import { uploadFile, saveFileToGridFS } from "@/lib/multer";
-import mongoose, { Document } from "mongoose";
-import AdmZip from "adm-zip";
-import { GridFSBucket } from "mongodb";
-import User from '@/models/user'
+import { PathOrFileDescriptor } from "fs";
+import formidable from "formidable";
+import fs from "fs";
+import { NextRequest, NextResponse } from "next/server";
+
+// Connect to MongoDB
+
 export const config = {
   api: {
-    bodyParser: false, // Disallow body parsing, consume as stream
+    bodyParser: false, // Disallow body parsing, let formidable handle it
   },
 };
 
-interface UserDocument extends Document {
-  username: string;
-  file_id: mongoose.Types.ObjectId;
-  userData: Record<string, any>;
-}
+export const POST = async (request: NextRequest) => {
+  connectDB();
+  console.log('starting')
+  const form = new formidable.IncomingForm();
 
+  const req = await request.json();
+  // Parse form data
+  form.parse(req, async (err, fields, files) => {
+    console.log(files);
 
+    if (err) {
+      console.error("Error parsing form data:", err);
+      return NextResponse.json({
+        status: 500,
+        message: "Error parsing form data",
+        error: err.message,
+      });
+    }
 
+    try {
+      // Read file contents
+      const fileList = Array.isArray(files.file) ? files.file : [files.file];
+      let fileContents = "";
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  await connect();
-const request = await req.body
-  const bucket = new GridFSBucket(mongoose.connection.db, {
-    bucketName: "uploads",
-  });
+      if (fileList === undefined)
+        return NextResponse.json({ status: 400, message: "BAD REQUEST" });
 
-  await new Promise((resolve, reject) => {
-    uploadFile(req as any, res as any, (err: any) => {
-      if (err) return reject(err);
-      resolve(null);
-    });
-  });
+      for (const file of fileList) {
+        // Read file contents
+        fileContents = fs.readFileSync(
+          file as unknown as PathOrFileDescriptor,
+          "utf-8"
+        );
+        const jsonData = JSON.parse(fileContents);
 
-  const userId = request.userId;
-  const zip = new AdmZip(request.file.buffer);
-  const zipEntries = zip.getEntries();
-  let userData: Record<string, any> = {};
+        // Example: Insert data into MongoDB using Mongoose
+        // const insertedData = await Track.insertMany(jsonData);
 
-  zipEntries.forEach((entry:any) => {
-    if (entry.entryName === "userdata.json") {
-      const data = entry.getData().toString("utf8");
-      userData = JSON.parse(data);
+        console.log("Data from file:", jsonData);
+      }
+      const jsonData: ITrack = JSON.parse(fileContents);
+
+      // Example: Insert data into MongoDB using Mongoose
+      const insertedData = await Track.insertMany(jsonData);
+
+      NextResponse.json({
+        status: 200,
+        message: "Data inserted successfully",
+        data: insertedData,
+      });
+    } catch (error: any) {
+      console.error("Error handling file upload:", error);
+      NextResponse.json({
+        status: 500,
+        message: error.message,
+      });
     }
   });
-
-  try {
-    const fileId = await saveFileToGridFS(req as any, bucket);
-
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { file_id: fileId, userData },
-      { new: true, upsert: true }
-    );
-
-    res
-      .status(200)
-      .json({
-        message: "File uploaded and user data extracted successfully",
-        user,
-      });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "An error occurred" });
-  }
 };
-
-export default handler;
