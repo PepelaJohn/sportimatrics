@@ -13,7 +13,7 @@ const Popup = ({ popup, popupRef }: Props) => {
     <div
       ref={popupRef}
       className={`fixed max-w-[300px] w-full  z-50 easeinOut  py-5 px-2 shadow-2xl rounded-lg flex  overflow-hidden m-auto mb-5 self-center bottom-[1vh] left-0 right-0 justify-center bg-black-5 min-h-[45px] ${
-        popup.show ? "traslate-y-0" : ""
+        popup.show ? "traslate-y-0" : "display-none"
       } pointer-events-none   items-center`}
     >
       <p

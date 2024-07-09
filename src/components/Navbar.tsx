@@ -23,6 +23,7 @@ const NavBar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const timoeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timoeoutRef2 = useRef<NodeJS.Timeout | null>(null);
   const popupRef = useRef<any>(null);
   const [loggedIn, setLoggedIn] = useState<boolean>(false);
   const dispatch = useDispatch();
@@ -34,17 +35,19 @@ const NavBar = () => {
     if (popup.show) {
       // use different variable as this whill happen after variable has changed
 
-      setTimeout(() => {
+      timoeoutRef2.current = setTimeout(() => {
         popupRef.current.classList.add("translateandFade");
       }, 1800);
 
       timoeoutRef.current = setTimeout(() => {
         dispatch({ type: CLOSE_DISPLAY });
+        // popupRef.current.classList.remove("translateandFade");
       }, 2000);
     }
 
     return () => {
       clearTimeout(timoeoutRef.current!);
+      clearTimeout(timoeoutRef2.current!)
     };
   }, [popup.show]);
 
