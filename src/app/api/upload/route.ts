@@ -3,9 +3,7 @@ import { Readable } from "stream";
 import { connectDB } from "@/lib/connectToDb";
 import Track, { ITrack } from "@/models/Track"; // Your Mongoose model
 import User from "@/models/user";
-// pages/api/upload.ts
 
-import fs from "fs";
 import { NextRequest, NextResponse } from "next/server";
 
 export const POST = async (request: NextRequest) => {
