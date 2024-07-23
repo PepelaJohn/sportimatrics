@@ -3,7 +3,7 @@ import User from "@/models/user";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-export const POST = async (request: any) => {
+export const POST = async (request: NextRequest) => {
   try {
     connectDB();
     const req = await request.json();
@@ -28,7 +28,7 @@ export const PATCH = async (request: NextRequest) => {
     const req = await request.json();
     if (!req.refresh_token) return NextResponse.json({ status: 400 });
     const user = await User.findOne({ email: req.email });
-    if (!user || !!user) return NextResponse.json({ status: 404 });
+    if (!user ) return NextResponse.json({ status: 404 });
     user.refresh_token = req.refresh_token;
     await user.save();
     return NextResponse.json({ status: 200 });

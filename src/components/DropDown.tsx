@@ -1,47 +1,28 @@
-import {
-  Cloud,
-  Copy,
-  CreditCard,
-  Github,
-  Keyboard,
-  LifeBuoy,
-  LogOut,
-  Mail,
-  MessageSquare,
-  Plus,
-  PlusCircle,
-  Settings,
-  User,
-  UserPlus,
-  Users,
-} from "lucide-react";
+import { LifeBuoy, LogOut, User } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import React from "react";
-import { MdWhatsapp } from "react-icons/md";
-import { CgFacebook, CgTwitter } from "react-icons/cg";
 import { FiGithub } from "react-icons/fi";
-import Toggle from "./Toggle";
+import { Logout } from "@/api";
+import { useDispatch } from "react-redux";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function DropdownMenuDemo({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const dispatch = useDispatch();
+  const router = useRouter();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
@@ -50,50 +31,15 @@ export default function DropdownMenuDemo({
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+            <Link className="flex w-full " href={"/profile"}>
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </Link>
             {/* <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut> */}
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <CreditCard className="mr-2 h-4 w-4" />
-            <span>Billing</span>
-            {/* <DropdownMenuShortcut>⌘B</DropdownMenuShortcut> */}
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="cursor-pointer">
-              <UserPlus className="mr-2 h-4 w-4" />
-              <span>Invite users</span>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent className="text-white-1 bg-black-3">
-                <DropdownMenuItem>
-                  <Mail className="mr-2 h-4 w-4" />
-                  <span>Mail</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CgFacebook className="mr-2 h-4 w-4" />
-                  <span>Facebook</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <MdWhatsapp className="mr-2 h-4 w-4" />
-                  <span>WhatsApp</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CgTwitter className="mr-2 h-4 w-4" />
-                  <span>Twitter</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Copy className="mr-2 h-4 w-4" />
-                  <span>Copy link</span>
-                </DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
-        </DropdownMenuGroup>
+
         <DropdownMenuSeparator />
         <DropdownMenuItem>
           <FiGithub className="mr-2 h-4 w-4" />
@@ -103,23 +49,21 @@ export default function DropdownMenuDemo({
           <LifeBuoy className="mr-2 h-4 w-4" />
           <span>Donate</span>
         </DropdownMenuItem>
-        <DropdownMenuItem disabled>
-          <Cloud className="mr-2 h-4 w-4" />
-          <span className="flex items-center gap-1">
-            API<span className="text-[10px]">( Coming soon )</span>
-          </span>
-        </DropdownMenuItem>
+
         <DropdownMenuSeparator />
-        <DropdownMenuItem >
-          {/* <Toggle className="mr-2 h-4 w-4" /> */}
-          <span className="flex items-center gap-1">
-           
-          </span>
+        <DropdownMenuItem>
+          <span className="flex text-xs items-center gap-1">Dark</span>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
-          {/* <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut> */}
+          <span
+            onClick={() => {
+              Logout(dispatch as React.Dispatch<UnknownAction>);
+              router.push("/");
+            }}
+          >
+            Log out
+          </span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

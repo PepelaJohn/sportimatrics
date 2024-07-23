@@ -47,7 +47,7 @@ const NavBar = () => {
 
     return () => {
       clearTimeout(timoeoutRef.current!);
-      clearTimeout(timoeoutRef2.current!)
+      clearTimeout(timoeoutRef2.current!);
     };
   }, [popup.show]);
 
@@ -100,11 +100,21 @@ const NavBar = () => {
           {loggedIn && (
             <div className="flex-1 justify-end hidden   text-[10px]  easeinOut uppercase gap-5 md:flex items-center">
               {navlinks.map((link) => (
-                <p key={link + "x"} className={`  easeinOut ${link === 'upload' ? "bg-yellow-500 h-6  flex items-center px-3 rounded-full":"text-white-2 hover:text-white-1"}`}>
+                <p
+                  key={link + "x"}
+                  className={`  easeinOut ${
+                    link === "upload"
+                      ? "bg-yellow-500 h-6  flex items-center px-3 rounded-full"
+                      : "text-white-2 hover:text-white-1"
+                  }`}
+                >
                   <Link
                     onClick={() => setSideBar(false)}
                     key={link}
-                    href={link.split(" ").join("-").toLowerCase()}
+                    href={
+                      link.split(" ").join("-").toLowerCase() +
+                      `${link.startsWith("Top") ? "?range=short_term" : ""}`
+                    }
                   >
                     {link}
                   </Link>
@@ -132,32 +142,45 @@ const NavBar = () => {
             </div>
           )}
 
-          <DropdownMenuDemo>
-            <span
-              className={`ml-5 hidden text-[10px] cursor-pointer  ${
-                !loggedIn
-                  ? "bg-green-400  rounded-full h-8  flex justify-center items-center px-5 text-black-1 "
-                  : " !text-white-1 "
-              }  !hover:text-white-1 easeinOut ml-auto text-white-1 uppercase md:flex`}
-            >
-              {loggedIn ? (
-                <span className="w-8 h-8 rounded-full ml-5 bg-black-5 text-sm flex cursor-pointer items-center justify-center">
-                  {!!user?.display_name ? getInitials(user?.display_name!) : ""}
-                </span>
-              ) : (
-                "Login"
-              )}
-            </span>
-          </DropdownMenuDemo>
+          {loggedIn && (
+            <DropdownMenuDemo>
+              <span
+                className={`ml-5 hidden text-[10px] cursor-pointer  ${
+                  !loggedIn
+                    ? "bg-green-400  rounded-full h-8  flex justify-center items-center px-5 text-black-1 "
+                    : " !text-white-1 "
+                }  !hover:text-white-1 easeinOut ml-auto text-white-1 uppercase md:flex`}
+              >
+                {loggedIn ? (
+                  <span className="w-8 h-8 rounded-full ml-5 bg-black-5 text-sm flex cursor-pointer items-center justify-center">
+                    {!!user?.display_name
+                      ? getInitials(user?.display_name!)
+                      : ""}
+                  </span>
+                ) : (
+                  "Login"
+                )}
+              </span>
+            </DropdownMenuDemo>
+          )}
 
-          <div className="flex-1 max-md:flex hidden  text-white-1  easeinOut uppercase items-center justify-end">
-            <button
-              onClick={() => setSideBar((prev) => !prev)}
-              className="rounded-lg bg-black-5 h-8 w-16 text-[10px]"
-            >
-              Menu
-            </button>
-          </div>
+          {loggedIn && (
+            <div className="flex-1 max-md:flex hidden  text-white-1  easeinOut uppercase items-center justify-end">
+              <button
+                onClick={() => setSideBar((prev) => !prev)}
+                className="rounded-lg bg-black-5 h-8 w-16 text-[10px]"
+              >
+                Menu
+              </button>
+            </div>
+          )}
+          {!loggedIn && (
+            <div className="flex-1 flex   text-white-1   uppercase items-center justify-end">
+              <Link href={'/auth'} className="rounded-lg bg-black-5 flex items-center justify-center h-8 w-16 text-[10px]">
+                Login
+              </Link>
+            </div>
+          )}
 
           <aside
             style={style}
@@ -167,7 +190,11 @@ const NavBar = () => {
               <button onClick={() => setSideBar(false)}>&times;</button>
             </div>
             <div className="flex-1 flex flex-col text-sm leading-10 gap-5 xl items-start pl-">
-              <Link className="capitalize hover:bg-slate-900 w-full pl-3 easeinOut" onClick={() => setSideBar(false)} href={"/"}>
+              <Link
+                className="capitalize hover:bg-slate-900 w-full pl-3 easeinOut"
+                onClick={() => setSideBar(false)}
+                href={"/"}
+              >
                 Home
               </Link>
               {navlinks.map((link, i) => (
@@ -180,10 +207,17 @@ const NavBar = () => {
                   {link}
                 </Link>
               ))}
-              <Link className="capitalize hover:bg-slate-900 w-full pl-3 easeinOut" href={"/profile"}>Profile</Link>
+              <Link
+                className="capitalize hover:bg-slate-900 w-full pl-3 easeinOut"
+                href={"/profile"}
+              >
+                Profile
+              </Link>
               {loggedIn && (
                 <div className="mt-auto flex items-center w-full justify-between pr-10 mb-5">
-                  <Link className="pl-3" href={"/logout"}>Logout</Link>
+                  <Link className="pl-3" href={"/logout"}>
+                    Logout
+                  </Link>
                   <IoMdLogOut className="cursor-pointer"></IoMdLogOut>
                 </div>
               )}

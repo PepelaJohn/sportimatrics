@@ -1,5 +1,5 @@
 "use client";
-import { ERROR } from "@/constants";
+import { ERROR, SUCCESS } from "@/constants";
 import { getCookie } from "@/lib/utils";
 import axios from "axios";
 import dotenv from "dotenv";
@@ -16,7 +16,7 @@ const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_URI!;
 // =================================REQUESTING AUTH============================================
 export const generateRandomString = (length: number) => {
   const possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    "0354cd09ea3b6e955c24cf110a5499495d23d5dec4fd1ae45813642f078d7667b240ab2692b3a73ca13369be0abce2351191";
   const values = crypto.getRandomValues(new Uint8Array(length));
   return values.reduce((acc, x) => acc + possible[x % possible.length], "");
 };
@@ -126,6 +126,7 @@ const renewAccessToken = async (refreshToken: string, email: string) => {
       },
       body: JSON.stringify({
         email: email,
+        refresh_token: response.refresh_token,
       }),
     };
 
@@ -177,6 +178,41 @@ export async function getProfile(
   }
 }
 
+export const Logout = async (dispatch: React.Dispatch<UnknownAction>) => {
+  try {
+    const userEmail = JSON.parse(localStorage.getItem("user")!)?.email;
+    if (!userEmail) {
+      dispatch({ type: ERROR, payload: "Unable to complete request" });
+    }
+    const payload = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: userEmail,
+      }),
+    };
+
+    const promiseData = await fetch(
+      "http://localhost:3000/api/logout",
+      payload
+    );
+    const data = await promiseData.json();
+    console.log(data);
+
+    if (data.status === 200) {
+      localStorage.clear();
+      cookie.remove("_gtPaotwcsA");
+      dispatch({ type: SUCCESS, payload: "Logged Out" });
+    }
+    return data;
+  } catch (error: any) {
+    dispatch({ type: ERROR, payload: "Failed to logout" });
+    console.warn(error.message, "Logout component");
+  }
+};
+
 export async function fetchRecentTracks(): Promise<any> {
   try {
     let accessToken = getCookie("_gtPaotwcsA");
@@ -190,50 +226,11 @@ export async function fetchRecentTracks(): Promise<any> {
     );
 
     const recentTracks = response.data.items;
+
     return recentTracks;
   } catch (error: any) {
     console.error("Error fetching recently played tracks:", error.message);
     rectifyToken(error);
-  }
-}
-export async function fetchTopTracks(): Promise<any> {
-  try {
-    let accessToken = getCookie("_gtPaotwcsA");
-    const response = await axios.get<any>(
-      "https://api.spotify.com/v1/me/top/tracks",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    const topTracks: any = response.data.items;
-    return topTracks;
-  } catch (error: any) {
-    console.error("Error fetching top tracks:", error.message);
-    throw error;
-  }
-}
-
-export async function fetchTopArtists(): Promise<any> {
-  try {
-    let accessToken = getCookie("_gtPaotwcsA");
-    const response = await axios.get<any>(
-      "https://api.spotify.com/v1/me/top/artists",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    // Extracting the array of items (top artists) from response
-    const topArtists: any = response.data.items;
-    return topArtists;
-  } catch (error: any) {
-    console.error("Error fetching top artists:", error.message);
-    throw error;
   }
 }
 
@@ -277,15 +274,17 @@ export const searchSpotify = async (
 export const getuserTopItems = async (
   type: string,
   time_range: string,
-  limit: number,
-  offset: number
+  limit?: number,
+  offset?: number
 ) => {
   try {
     let accessToken = getCookie("_gtPaotwcsA");
     if (!accessToken) return;
 
     const response = await axios.get(
-      `https://api.spotify.com/v1/me/top/?type=${type}&time_range=${time_range}&limit=${limit}&offset=${offset}`,
+      `https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=${
+        limit || 50
+      }&offset=${offset || 0}`,
       {
         headers: {
           Authorization: "Bearer " + accessToken,
@@ -293,7 +292,8 @@ export const getuserTopItems = async (
       }
     );
 
-    const data = await response.data();
+    const data = response.data.items;
+
     return data;
   } catch (error) {
     rectifyToken(error);
@@ -302,13 +302,15 @@ export const getuserTopItems = async (
 
 export const uploadToDB = async (formData: { [key: string]: any }) => {
   try {
+    const userEmail = JSON.parse(localStorage.getItem("user")!)?.email;
     const payload = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        formData,
+        ...formData,
+        email: userEmail,
       }),
     };
 

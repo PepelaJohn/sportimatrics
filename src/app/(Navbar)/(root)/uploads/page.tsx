@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Upload } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { ERROR, SUCCESS } from '@/constants';
-
+import { ChangeEvent, DragEvent } from "react";
 type Track = {
 endTime: string,
     artistName: string,
@@ -13,6 +13,8 @@ endTime: string,
 
 const Home = () => {
     const dispatch = useDispatch()
+    const [progress, setProgress] = useState<number>(0);
+    const [dragOver, setDragOver] = useState<boolean>(false);
     const [jsonArray, setJsonArray] = useState<Track[]>([]);
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {

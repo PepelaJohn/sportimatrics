@@ -6,10 +6,41 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// utils/formatDateTime.ts
+export function formatDateTime(isoDateString: string): string {
+  // Create a Date object
+  const date = new Date(isoDateString);
+
+  // Define the formatting options
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    
+  };
+
+  // Format the date and time using Intl.DateTimeFormat
+  return new Intl.DateTimeFormat('en-US', options).format(date);
+}
+
+// utils/formatNumber.ts
+export function formatNumberWithCommas(number: number | string): string {
+  // Convert the input to a string in case it's a number
+  const numStr = number.toString();
+
+  // Use a regular expression to format the number with commas
+  return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+
+
 export const animateHomepage = () => {};
 
 import streamdata from "@/assets/StreamingHistory_music_1.json";
-import { ERROR, SUCCESS } from "@/constants";
+import { ERROR } from "@/constants";
 export { streamdata };
 
 export const streamData = [
