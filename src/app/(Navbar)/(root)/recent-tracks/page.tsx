@@ -4,17 +4,20 @@ import { fetchRecentTracks } from "@/api";
 import React, { useEffect, useState } from "react";
 import LoaderSpinner from "@/components/LoaderSpinner";
 import { formatDateTime } from "@/lib/utils";
+import { useDispatch } from "react-redux";
 
 export default function TopSongs() {
   const [topTracks, setTopTracks] = useState<RTrackType[] | null>(null);
-
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const getTopTracks = async () => {
       setLoading(true);
 
-      const promiseData = await fetchRecentTracks();
+      const promiseData = await fetchRecentTracks(
+        dispatch as React.Dispatch<UnknownAction>
+      );
 
       setTopTracks(promiseData);
       setLoading(false);

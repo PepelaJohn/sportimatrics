@@ -7,9 +7,11 @@ import { useDispatch } from "react-redux";
 import { ERROR, SUCCESS } from "@/constants";
 import { ChangeEvent, DragEvent } from "react";
 import { uploadToDB } from "@/api";
+import { useRouter } from "next/navigation";
 
 const Home = () => {
-  const [data, setData] = useState<{ [key: string]: any } | null>(null);
+  const [data, setData] = useState<{ [key: string]: any }>({});
+  const router = useRouter()
   const [fileProgress, setFileProgress] = useState<{
     [filename: string]: number;
   }>({});
@@ -58,8 +60,6 @@ const Home = () => {
     const playlistHistory: { [key: string]: any } = [];
     let rest: { [key: string | number]: any } = {};
 
-    
-
     await Promise.all(
       Object.keys(zipData.files).map(async (filename) => {
         if (
@@ -81,22 +81,27 @@ const Home = () => {
               const jsonContent = JSON.parse(fileContent);
 
               if (
-                filename.startsWith("StreamingHistory_music_") &&
+                filename.includes("StreamingHistory_music_") &&
                 filename.endsWith(".json")
               ) {
                 musicHistory.push(...jsonContent);
               } else if (
-                filename.startsWith("StreamingHistory_podcast_") &&
+                filename.includes("StreamingHistory_podcast_") &&
                 filename.endsWith(".json")
               ) {
                 podcastHistory.push(...jsonContent);
               } else if (
-                filename.startsWith("Playlist") &&
+                filename.includes("Playlist") &&
                 filename.endsWith(".json")
               ) {
                 playlistHistory.push(...jsonContent.playlists);
               } else {
-                rest[filename.replace(".json", "").toLowerCase()] = jsonContent;
+                rest[
+                  filename
+                    .split("/")
+                    [filename.split.length - 1].replace(".json", "")
+                    .toLowerCase()
+                ] = jsonContent;
               }
             } catch (error: any) {
               dispatch({
@@ -117,21 +122,28 @@ const Home = () => {
         playlists: playlistHistory,
         ...rest,
       };
-      setData(combinedData);
+      setData(combinedData)
+     
+
       dispatch({ type: SUCCESS, payload: "Successfully uploaded" });
     }
 
-    setProcessingComplete(true);
+    if (musicHistory.length !== 0 || podcastHistory.length !== 0) {
+      setProcessingComplete(true);
+    }
   };
 
   const handleUpload = async () => {
-    if (data) {
+    if (!!Object.keys(data).length) {
       await uploadToDB(data);
 
       dispatch({ type: SUCCESS, payload: "Data successfully uploaded to DB" });
       setFileProgress({});
       setData({});
-      setProcessingComplete(false)
+      setProcessingComplete(false);
+      router.push('/')
+    } else {
+      dispatch({ type: ERROR, payload: "No data to upload" });
     }
   };
 
@@ -211,7 +223,11 @@ const Home = () => {
               key={filename}
               className="flex justify-between items-center bg-zinc-900 py-3 px-5 text-sm rounded-lg mb-2"
             >
-              <span className="truncate">{filename}</span>
+              <span className="truncate capitalize">
+                {filename
+                  .split("/")
+                  [filename.split.length - 1].replace(".json", "")}
+              </span>
               <div className="flex gap-3">
                 <span className="flex-1">
                   {fileProgress[filename].toFixed(0)}%

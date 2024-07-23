@@ -38,22 +38,16 @@ export default function DropdownMenuDemo({
             {/* <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut> */}
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
+       
 
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <FiGithub className="mr-2 h-4 w-4" />
-          <span>GitHub</span>
-        </DropdownMenuItem>
+        
         <DropdownMenuItem>
           <LifeBuoy className="mr-2 h-4 w-4" />
-          <span>Donate</span>
+          <Link href={'/donate'}>Donate</Link>
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <span className="flex text-xs items-center gap-1">Dark</span>
-        </DropdownMenuItem>
+        
+        <DropdownMenuSeparator/>
         <DropdownMenuItem className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span

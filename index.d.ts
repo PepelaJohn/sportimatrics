@@ -6,7 +6,7 @@ type ArtistType = {
   previous: string;
   total: number;
   items: Item[];
-}
+};
 
 interface Item {
   external_urls: Externalurls;
@@ -128,18 +128,18 @@ declare interface userType {
   refresh_token: string;
 }
 
+type ImageArrT = {
+  url: string;
+  height: Number;
+  width: Number;
+};
+
 declare type promiseUser = {
   display_name: string;
   external_urls: { [key: string | number]: string };
   href: string;
   id: string;
-  images: [
-    {
-      url: string;
-      height: Number;
-      width: Number;
-    }
-  ];
+  images: ImageArrT[];
   product: string;
   type: string;
   uri: string;
@@ -150,7 +150,7 @@ declare type promiseUser = {
   followers: { [key: string | number]: string | number };
 };
 
- declare interface Dispatch<A extends Action = UnknownAction> {
+declare interface Dispatch<A extends Action = UnknownAction> {
   <T extends A>(action: T, ...extraArgs: any[]): T;
 }
 
@@ -162,4 +162,3 @@ declare type actionProp = {
   payload: { [key: string | number | symbol]: any };
   type: string;
 };
-

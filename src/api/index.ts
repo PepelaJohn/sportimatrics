@@ -5,6 +5,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
 import cookie from "js-cookie";
+import React from "react";
 // const cookie = document.cookie;
 export const authUrl = new URL("https://accounts.spotify.com/authorize");
 const apiUrl = new URL("https://accounts.spotify.com/api/token");
@@ -142,7 +143,10 @@ const renewAccessToken = async (refreshToken: string, email: string) => {
   return false;
 };
 
-const rectifyToken = async (error: any) => {
+const rectifyToken = async (
+  error: any,
+  dispatch: React.Dispatch<UnknownAction>
+) => {
   if (error?.response?.data?.error?.status === 401) {
     const userEmail = JSON.parse(localStorage.getItem("user")!)?.email;
     if (
@@ -151,14 +155,14 @@ const rectifyToken = async (error: any) => {
       userEmail === null ||
       userEmail === "undefined"
     )
-      alert("Please Login again");
+      Logout(dispatch);
 
     const refresh_token = await getRefreshToken(userEmail);
     renewAccessToken(refresh_token, userEmail);
   }
 };
 export async function getProfile(
-  dispatch?: React.Dispatch<UnknownAction>
+  dispatch: React.Dispatch<UnknownAction>
 ): Promise<any> {
   try {
     let accessToken = getCookie("_gtPaotwcsA");
@@ -174,7 +178,7 @@ export async function getProfile(
       dispatch({ type: ERROR, payload: "Please Refresh the page!" });
     }
     console.log(error);
-    rectifyToken(error);
+    rectifyToken(error, dispatch);
   }
 }
 
@@ -213,7 +217,9 @@ export const Logout = async (dispatch: React.Dispatch<UnknownAction>) => {
   }
 };
 
-export async function fetchRecentTracks(): Promise<any> {
+export async function fetchRecentTracks(
+  dispatch: React.Dispatch<UnknownAction>
+): Promise<any> {
   try {
     let accessToken = getCookie("_gtPaotwcsA");
     const response = await axios.get<any>(
@@ -230,14 +236,14 @@ export async function fetchRecentTracks(): Promise<any> {
     return recentTracks;
   } catch (error: any) {
     console.error("Error fetching recently played tracks:", error.message);
-    rectifyToken(error);
+    rectifyToken(error, dispatch);
   }
 }
 
 export const searchSpotify = async (
   query: string,
   setsearchData: React.Dispatch<React.SetStateAction<{ [key: string]: any }>>,
-  dispatch?: React.Dispatch<UnknownAction>
+  dispatch: React.Dispatch<UnknownAction>
 ) => {
   console.log(query, "search spotify");
 
@@ -267,13 +273,14 @@ export const searchSpotify = async (
       });
     }
     // setsearchData({ error: "Error occured" });
-    rectifyToken(error);
+    rectifyToken(error, dispatch);
   }
 };
 
 export const getuserTopItems = async (
   type: string,
   time_range: string,
+  dispatch: React.Dispatch<UnknownAction>,
   limit?: number,
   offset?: number
 ) => {
@@ -296,7 +303,7 @@ export const getuserTopItems = async (
 
     return data;
   } catch (error) {
-    rectifyToken(error);
+    rectifyToken(error, dispatch);
   }
 };
 

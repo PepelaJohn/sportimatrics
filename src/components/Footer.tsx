@@ -1,10 +1,29 @@
 import React from "react";
+import {
+  Footer,
+  FooterCopyright,
+  FooterLink,
+  FooterLinkGroup,
+} from "flowbite-react";
 
-type Props = {};
+const x = true;
 
-const Footer = (props: Props) => {
-  return (
-    <footer className="text-white-1 items-center h-[18vh] justify-center bg-black-1 flex flex-col">
+const FooterCompoment = () => {
+  return x ? (
+    <Footer container className="bg-black-2  flex items-center   !justify-center">
+     <div className="max-w-5xl max-sm:px-4 sm:px-14 flex  w-full justify-between   ">
+     <FooterCopyright href="#" by="Spotimetrics" year={2022} />
+      <FooterLinkGroup>
+        <FooterLink href="#">About</FooterLink>
+        <FooterLink href="#">Privacy Policy</FooterLink>
+        <FooterLink href="#">Feedback</FooterLink>
+        <FooterLink href="#">Contact</FooterLink>
+        <FooterLink href="https://buymeacoffee.com/spotimetrics" target="_blank">Donate</FooterLink>
+      </FooterLinkGroup>
+     </div>
+    </Footer>
+  ) : (
+    <footer className="text-white-1 items-center h-[18vh] justify-center bg-black-4 flex flex-col">
       <div className="max-w-5xl max-sm:px-4 sm:px-14   w-full flex-1 flex  pt-2 justify-between">
         <div className="max-w-[3/12] gap-1 text-sm flex  flex-col">
           <span className="mb-1">SpotiMetrics</span>
@@ -14,17 +33,21 @@ const Footer = (props: Props) => {
         <div className="max-w-[3/12] gap-1 text-sm flex flex-col">
           <span className="mb-1">Legal</span>
           <span className="text-white-2 cursor-pointer text-xs">Privacy</span>
-          <span className="text-white-2 cursor-pointer text-xs">Terms and Conditions</span>
+          <span className="text-white-2 cursor-pointer text-xs">
+            Terms and Conditions
+          </span>
         </div>
         <div className="max-w-[3/12] gap-1 text-sm flex flex-col">
           <span className="mb-1">Company</span>
-          <span className="text-white-2 cursor-pointer text-xs">Donate</span>
+          <a href="https://buymeacoffee.com/spotimetrics" target="_blank" className="text-white-2 cursor-pointer text-xs">Donate</a>
           <span className="text-white-2 cursor-pointer text-xs">Contact</span>
         </div>
         <div className="max-w-[3/12] gap-1 text-sm flex flex-col ">
           <span className="mb-1">Downloads</span>
-          
-          <span className="text-white-2 cursor-pointer text-xs">Coming soon...</span>
+
+          <span className="text-white-2 cursor-pointer text-xs">
+            Coming soon...
+          </span>
         </div>
       </div>
       <div className="mx-width w-full my-2 text-center ">
@@ -39,4 +62,4 @@ const Footer = (props: Props) => {
   );
 };
 
-export default Footer;
+export default FooterCompoment;

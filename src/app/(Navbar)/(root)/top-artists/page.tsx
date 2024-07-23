@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import LoaderSpinner from "@/components/LoaderSpinner";
 import { formatNumberWithCommas } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
 
 export default function TopSongs({
   searchParams,
@@ -39,7 +40,7 @@ export default function TopSongs({
       : 0
   );
   const sortTime = ["4 Weeks", "6 Months", "Lifetime"];
-
+  const dispatch = useDispatch()
   useEffect(() => {
     const getTopTracks = async () => {
       setLoading(true);
@@ -59,7 +60,7 @@ export default function TopSongs({
         default:
           term = "short_term";
       }
-      const promiseData = await getuserTopItems("artists", term, 20, 0);
+      const promiseData = await getuserTopItems("artists", term, dispatch as React.Dispatch<UnknownAction> , 20, 0);
       router.push(`/top-artists?range=${term}`);
       setTopTracks(promiseData);
       setLoading(false);

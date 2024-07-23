@@ -132,7 +132,7 @@ const NavBar = () => {
               >
                 <input
                   onChange={(e) => setSearchParams(e.target.value)}
-                  className="bg-transparent flex-1 !text-xs outline-none border-none text-white-2 w-[100px]"
+                  className="bg-transparent flex-1 !text-xs !outline-none !border-none text-white-2 w-[100px]"
                   type="text"
                   value={searchParams!}
                   placeholder="Search"

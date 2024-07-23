@@ -4,6 +4,7 @@ import { getuserTopItems } from "@/api";
 import React, { useEffect, useState } from "react";
 import LoaderSpinner from "@/components/LoaderSpinner";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
 
 export default function TopSongs({
   searchParams,
@@ -12,6 +13,7 @@ export default function TopSongs({
 }) {
   const [topTracks, setTopTracks] = useState<TracksType[] | null>(null);
   const router = useRouter();
+  const dispatch = useDispatch()
 
   if (!searchParams.range) {
     router.push("/top-tracks?range=short_term");
@@ -58,7 +60,7 @@ export default function TopSongs({
       }
 
       if (searchParams.range) {
-        const promiseData = await getuserTopItems("tracks", term, 20, 0);
+        const promiseData = await getuserTopItems("tracks", term,dispatch as React.Dispatch<UnknownAction>, 20, 0);
         router.push(`/top-tracks?range=${term}`);
 
         setTopTracks(promiseData);
