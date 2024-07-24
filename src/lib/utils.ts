@@ -6,6 +6,35 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function timeSince(isoDateString: string): string {
+  const now = new Date();
+  const past = new Date(isoDateString);
+  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
+
+  const units = [
+      { name: "year", seconds: 31536000 },
+      { name: "month", seconds: 2592000 },
+      { name: "day", seconds: 86400 },
+      { name: "hour", seconds: 3600 },
+      { name: "minute", seconds: 60 },
+      { name: "second", seconds: 1 }
+  ];
+
+  for (const unit of units) {
+      const count = Math.floor(diffInSeconds / unit.seconds);
+      if (count >= 1) {
+          return `${count} ${unit.name}${count > 1 ? "s" : ""} ago`;
+      }
+  }
+
+  return "just now"; // If the difference is less than a second
+}
+
+// Example usage:
+const isoDateString = "2024-07-24T12:34:56Z";
+console.log(timeSince(isoDateString)); // Output will vary based on the current date and time
+
+
 // utils/formatDateTime.ts
 export function formatDateTime(isoDateString: string): string {
   // Create a Date object
@@ -13,17 +42,16 @@ export function formatDateTime(isoDateString: string): string {
 
   // Define the formatting options
   const options: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
     hour12: true,
-    
   };
 
   // Format the date and time using Intl.DateTimeFormat
-  return new Intl.DateTimeFormat('en-US', options).format(date);
+  return new Intl.DateTimeFormat("en-US", options).format(date);
 }
 
 // utils/formatNumber.ts
@@ -32,10 +60,8 @@ export function formatNumberWithCommas(number: number | string): string {
   const numStr = number.toString();
 
   // Use a regular expression to format the number with commas
-  return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
-
-
 
 export const animateHomepage = () => {};
 
@@ -124,6 +150,10 @@ export function getInitials(name: string): string {
 }
 export function getCookie(cname: string) {
   let name = cname + "=";
+
+  if (typeof window === "undefined" || typeof window === undefined) {
+    return "";
+  }
   let decodedCookie = decodeURIComponent(window.document.cookie);
   let ca = decodedCookie.split(";");
   for (let i = 0; i < ca.length; i++) {
@@ -281,3 +311,5 @@ export const getTopTracks = (
 };
 
 // =============================Functions to fetch recent tracks from Spotify API======================================
+
+

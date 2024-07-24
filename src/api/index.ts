@@ -132,6 +132,7 @@ const renewAccessToken = async (refreshToken: string, email: string) => {
     };
 
     await fetch("http://localhost:3000/api/refresh", payload);
+    window.location.reload();
   }
 
   if (!!response.access_token) {
@@ -203,12 +204,15 @@ export const Logout = async (dispatch: React.Dispatch<UnknownAction>) => {
       payload
     );
     const data = await promiseData.json();
-    console.log(data);
 
     if (data.status === 200) {
       localStorage.clear();
       cookie.remove("_gtPaotwcsA");
       dispatch({ type: SUCCESS, payload: "Logged Out" });
+
+      if (typeof window !== "undefined" && typeof window !== undefined) {
+        window.location.href = "http://localhost:3000";
+      }
     }
     return data;
   } catch (error: any) {

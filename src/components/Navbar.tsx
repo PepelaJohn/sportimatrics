@@ -80,6 +80,7 @@ const NavBar = () => {
     "Top Artists",
     // "Top Genres",
     "Recent Tracks",
+    "insights",
     "upload",
   ];
   return (
@@ -152,10 +153,25 @@ const NavBar = () => {
                 }  !hover:text-white-1 easeinOut ml-auto text-white-1 uppercase md:flex`}
               >
                 {loggedIn ? (
-                  <span className="w-8 h-8 rounded-full ml-5 bg-black-5 text-sm flex cursor-pointer items-center justify-center">
-                    {!!user?.display_name
+                  <span className="w-8 h-8 rounded-full ml-5 bg-black-5 !overflow-hidden text-sm flex cursor-pointer items-center justify-center">
+                    {/* {!!user?.display_name
                       ? getInitials(user?.display_name!)
-                      : ""}
+                      : ""} */}
+
+                    {!!user?.images.length ? (
+                      <img
+                        className="inline-block shrink-0 rounded-2xl w-full h-full "
+                        src={user?.images[0]?.url}
+                        //src="https://raw.githubusercontent.com/Loopple/loopple-public-assets/main/riva-dashboard-tailwind/img/avatars/avatar1.jpg"
+                        alt="image"
+                      />
+                    ) : (
+                      <>
+                        {!!user?.display_name
+                          ? getInitials(user?.display_name!)
+                          : ""}
+                      </>
+                    )}
                   </span>
                 ) : (
                   "Login"
@@ -176,7 +192,10 @@ const NavBar = () => {
           )}
           {!loggedIn && (
             <div className="flex-1 flex   text-white-1   uppercase items-center justify-end">
-              <Link href={'/auth'} className="rounded-lg bg-black-5 flex items-center justify-center h-8 w-16 text-[10px]">
+              <Link
+                href={"/auth"}
+                className="rounded-lg bg-black-5 flex items-center justify-center h-8 w-16 text-[10px]"
+              >
                 Login
               </Link>
             </div>

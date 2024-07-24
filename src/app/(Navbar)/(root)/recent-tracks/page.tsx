@@ -3,7 +3,7 @@
 import { fetchRecentTracks } from "@/api";
 import React, { useEffect, useState } from "react";
 import LoaderSpinner from "@/components/LoaderSpinner";
-import { formatDateTime } from "@/lib/utils";
+import { formatDateTime, timeSince } from "@/lib/utils";
 import { useDispatch } from "react-redux";
 
 export default function TopSongs() {
@@ -72,7 +72,8 @@ export default function TopSongs() {
                         </span>{" "}
                       </h2>
                       <p className="text-sm w-full flex justify-center text-gray-1">
-                        {formatDateTime(played_at)}
+                        {/* {formatDateTime(played_at)} */}
+                        {timeSince(played_at)}
                       </p>
                     </div>
                   </figure>

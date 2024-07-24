@@ -1,94 +1,11 @@
 import mongoose from "mongoose";
 
-const followSchema = new mongoose.Schema({
-  followerCount: {
-    type: Number,
-    default: 0,
-  },
-  followingUsersCount: {
-    type: Number,
-    default: 0,
-  },
-  dismissingUsersCount: {
-    type: Number,
-    default: 0,
-  },
-});
 
-const marqueeSchema = new mongoose.Schema({
-  artistName: String,
-  segment: String,
-});
 
-const identitySchema = new mongoose.Schema({
-  displayName: String,
-  firstName: String,
-  lastName: String,
-  imageUrl: String,
-  largeImageUrl: String,
-  tasteMaker: {
-    type: Boolean,
-    default: false,
-  },
-  verified: {
-    type: Boolean,
-    default: false,
-  },
-});
 
-const identifierSchema = new mongoose.Schema({
-  identifierType: String,
-  identifierValue: String,
-});
 
-const userdataSchema = new mongoose.Schema({
-  username: String,
-  email: String,
-  country: String,
-  createdFromFacebook: {
-    type: Boolean,
-    default: false,
-  },
-  facebookUid: String,
-  birthdate: mongoose.Schema.Types.Mixed, // To support both String and Date
-  gender: String,
-  postalCode: String,
-  mobileNumber: mongoose.Schema.Types.Mixed, // To support both String and Number
-  mobileOperator: String,
-  mobileBrand: mongoose.Schema.Types.Mixed, // To support both String and Number
-  creationTime: mongoose.Schema.Types.Mixed, // To support both String and Date
-});
 
-const trackSchema = new mongoose.Schema({
-  artist: String,
-  album: String,
-  track: String,
-  uri: String,
-});
 
-const albumSchema = new mongoose.Schema({
-  artist: String,
-  album: String,
-  uri: String,
-});
-
-const showSchema = new mongoose.Schema({
-  artist: String,
-  publisher: String,
-  uri: String,
-});
-
-const episodeSchema = new mongoose.Schema({
-  artist: String,
-  show: String,
-  uri: String,
-});
-
-const bannedTrackSchema = new mongoose.Schema({
-  artist: String,
-  show: String,
-  uri: String,
-});
 
 const imageSchema = new mongoose.Schema({
   url: String,

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { getProfile, getToken } from "@/api";
 import { useRouter } from "next/navigation";
 import { getCookie } from "@/lib/utils";
+import { useDispatch } from "react-redux";
 type Props = {};
 
 function page({
@@ -13,7 +14,8 @@ function page({
 }) {
   const router = useRouter();
 
-  const [user, setUser] = useState<promiseUser>();
+ 
+  const dispatch = useDispatch()
 
   if (!searchParams.code) {
     router.push("/auth");
@@ -26,10 +28,10 @@ function page({
     const getAndCheckAuth = async () => {
       const isAuthenticated = await getToken();
       if (isAuthenticated.authenticated) {
-        let user = getProfile();
+        let user = getProfile(dispatch as React.Dispatch<UnknownAction>);
         user.then(async function (result: any) {
           if (result.display_name) {
-            setUser(result);
+            
             localStorage.setItem("user", JSON.stringify(result));
             const payload = {
               method: "POST",
