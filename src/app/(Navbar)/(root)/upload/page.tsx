@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import JSZip from "jszip";
-import { Upload } from "lucide-react";
+
 import { Trash2 as Delete } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { ERROR, SUCCESS } from "@/constants";
@@ -99,8 +99,8 @@ const Home = () => {
                 rest[
                   filename
                     .split("/")
-                    [filename.split.length - 1].replace(".json", "")
-                    .toLowerCase()
+                    [filename.split.length - 1]?.replace(".json", "")
+                    ?.toLowerCase()
                 ] = jsonContent;
               }
             } catch (error: any) {
@@ -226,7 +226,7 @@ const Home = () => {
               <span className="truncate capitalize">
                 {filename
                   .split("/")
-                  [filename.split.length - 1].replace(".json", "")}
+                  [filename.split.length - 1]?.replace(".json", "") || filename.replace('json', "")}
               </span>
               <div className="flex gap-3">
                 <span className="flex-1">

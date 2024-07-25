@@ -19,7 +19,7 @@ const BarChart: FC<BarChartProps> = ({ data }) => {
                 label: 'Total Minutes Played',
                 data: data.values,
                 backgroundColor: 'rgba(39, 83, 52, 0.6)', // Adjust for dark mode
-                borderColor: '#0f2711cf',
+                borderColor: '#0f2711f0',
                 borderWidth: 1
             }
         ]
@@ -27,6 +27,7 @@ const BarChart: FC<BarChartProps> = ({ data }) => {
 
     const options = {
         responsive: true,
+        maintainAspectRatio:true,
         plugins: {
             legend: {
                
@@ -40,13 +41,15 @@ const BarChart: FC<BarChartProps> = ({ data }) => {
                 callbacks: {
                     label: (context: any) => `${context.dataset.label}: ${context.raw} minutes`
                 },
-                backgroundColor: '#333', // Tooltip background color
-                titleColor: '#fff', // Tooltip title color
-                bodyColor: '#fff' // Tooltip body color
+                backgroundColor: '#000000', // Tooltip background color
+                titleColor: '#888888', // Tooltip title color
+                bodyColor: '#7c7c7c', // Tooltip body color
+                borderColor:"#091408"
             }
         },
         scales: {
             x: {
+                beginAtZero: true,
                 ticks: {
                     color: '#6e6d6d' ,
                     fontSize:5// X-axis labels color

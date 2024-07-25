@@ -175,9 +175,8 @@ export async function getProfile(
     });
     return response.data;
   } catch (error: any) {
-    if (!!dispatch) {
-      dispatch({ type: ERROR, payload: "Please Refresh the page!" });
-    }
+    dispatch({ type: ERROR, payload: "Please Refresh the page!" });
+
     console.log(error);
     rectifyToken(error, dispatch);
   }
@@ -331,6 +330,28 @@ export const uploadToDB = async (formData: { [key: string]: any }) => {
     );
     const data = await promiseData.json();
     console.log(data);
+  } catch (error: any) {
+    console.table(error);
+  }
+};
+export const getFormDB = async () => {
+  try {
+    const userEmail = JSON.parse(localStorage.getItem("user")!)?.email;
+    if (!userEmail) throw new Error("Please refresh page or Login");
+    const payload = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+
+    const promiseData = await fetch(
+      `http://localhost:3000/api/upload?email=${userEmail}`,
+      payload
+    );
+    const data = await promiseData.json();
+  
+    return data
   } catch (error: any) {
     console.table(error);
   }

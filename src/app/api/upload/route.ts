@@ -1,59 +1,143 @@
 import { connectDB } from "@/lib/connectToDb";
 import User from "@/models/user";
-
+import RawData from "@/models/rawData";
+import ProcessedData from "@/models/processedData";
 import { NextRequest, NextResponse } from "next/server";
+import { processData } from "@/lib/utilsq.backup";
 
 export const POST = async (request: NextRequest) => {
-  connectDB();
-  const req = await request.json();
-
-  const follow = req.follow || {};
-  const music_history = req.music_history || [];
-  const podcast_history = req.podcast_history || [];
-  const marquee = req.marquee || [];
-  const identity = req.identity || {};
-  const identifiers = req.identifiers || {};
-  const userdata = req.userdata || {};
-  const yourlibrary = req.yourlibrary || {
-    tracks: [],
-    albums: [],
-    shows: [],
-    episodes: [],
-    bannedTracks: [],
-    artists: [],
-    bannedArtists: [],
-    other: [],
-  };
-  const playlists = req.playlists || [];
-
-  const email = req.email;
-  if (!email) {
-    return NextResponse.error();
-  }
-
   try {
+    await connectDB();
+
+    const req = await request.json();
+
+    const follow = req.follow || {};
+    const music_history = req.music_history || [];
+    const podcast_history = req.podcast_history || [];
+    const marquee = req.marquee || [];
+    const identity = req.identity || {};
+    const identifiers = req.identifiers || {};
+    const userdata = req.userdata || {};
+    const yourlibrary = req.yourlibrary || {
+      tracks: [],
+      albums: [],
+      shows: [],
+      episodes: [],
+      bannedTracks: [],
+      artists: [],
+      bannedArtists: [],
+      other: [],
+    };
+    const playlists = req.playlists || [];
+
+    const email = req.email;
+    if (!email) {
+      return NextResponse.error();
+    }
+
     let user = await User.findOne({ email: req.email });
 
-    user.follow = follow;
-    user.music_history = music_history;
-    user.podcast_history = podcast_history;
-    user.marquee = marquee;
-    user.identity = identity;
-    user.identifiers = identifiers;
-    user.userdata = userdata;
-    user.playlists = playlists;
-    user.yourlibrary = yourlibrary;
-    await user.save()
-    return NextResponse.json({
-      status: 200,
-      message: "User Updated succesfully",
-    });
-  } catch (error: any) {
-    return NextResponse.json({
-      status: 500,
-      message: error.message || "Internal Server Error",
-    });
+    if (!user) {
+      return NextResponse.json({ message: "Unknown User" }, { status: 404 });
+    }
 
-    console.log(error, "upload post");
+    const uploadedDataId = user?.uploads?.rawData?.toString();
+
+    let rawData: any;
+    if (!uploadedDataId) {
+      rawData = new RawData();
+    } else {
+      rawData = await RawData.findById(uploadedDataId);
+    }
+
+    if (!rawData) {
+      return NextResponse.json({ message: "Not Found" }, { status: 404 });
+    }
+
+    // if (uploadedDataId) {
+    //   // Clear data in the specific document
+    //   await RawData.findByIdAndUpdate(uploadedDataId, {
+    //     $unset: {
+    //       music_history: 1,
+    //       podcast_history: 1,
+    //       marquee: 1,
+    //       identity: 1,
+    //       identifiers: 1,
+    //       userdata: 1,
+    //       playlists: 1,
+    //       yourlibrary: 1,
+    //     },
+    //   });
+    // }
+
+    user.follow = follow;
+    rawData.userId = user._id;
+    rawData.music_history = music_history;
+    rawData.podcast_history = podcast_history;
+    rawData.marquee = marquee;
+    rawData.identity = identity;
+    rawData.identifiers = identifiers;
+    rawData.userdata = userdata;
+    rawData.playlists = playlists;
+    rawData.yourlibrary = yourlibrary;
+
+    user.uploads.processed = false;
+    user.uploads.rawData = rawData._id;
+
+    await user.save();
+    await rawData.save();
+
+    return NextResponse.json(
+      { message: "User Updated successfully" },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error("upload post", error);
+    return NextResponse.json(
+      { message: error.message || "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+};
+
+export const GET = async (request: NextRequest) => {
+  try {
+    connectDB();
+    const url = new URL(request.url);
+    const params = new URLSearchParams(url.search);
+
+    console.log(params);
+
+    const email = params.get("email");
+    if (!email) {
+      return NextResponse.error();
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      return NextResponse.json({ message: "Unknown User" }, { status: 404 });
+    }
+
+    const uploadedDataId = user?.uploads?.rawData?.toString();
+
+    const rawData = await RawData.findById(uploadedDataId).select([
+      "music_history",
+      "podcast_history",
+      "marquee",
+    ]);
+    if (!rawData)
+      return NextResponse.json({ message: "Data not found" }, { status: 404 });
+
+    return NextResponse.json(
+      { ...rawData._doc, processed: user.uploads.processed },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.log(error);
+    return NextResponse.json(
+      { message: error.message || "Internal Server Error" },
+      { status: 500 }
+    );
   }
 };

@@ -30,10 +30,6 @@ export function timeSince(isoDateString: string): string {
   return "just now"; // If the difference is less than a second
 }
 
-// Example usage:
-const isoDateString = "2024-07-24T12:34:56Z";
-console.log(timeSince(isoDateString)); // Output will vary based on the current date and time
-
 
 // utils/formatDateTime.ts
 export function formatDateTime(isoDateString: string): string {
@@ -131,6 +127,27 @@ export const streamData = [
     msPlayed: 228021,
   },
 ];
+
+export function getDifferenceInSecondsAndMinutes(date1: string, date2: string): { seconds: number; minutes: number } {
+  // Parse the ISO date strings into Date objects
+  const startDate = new Date(date1);
+  const endDate = new Date(date2);
+
+  // Calculate the difference in milliseconds
+  const differenceInMilliseconds = Math.abs(endDate.getTime() - startDate.getTime());
+
+  // Convert milliseconds to seconds and minutes
+  const seconds = Math.floor(differenceInMilliseconds / 1000);
+  const minutes = Math.floor(seconds / 60);
+
+  return {
+    seconds,
+    minutes
+  };
+}
+
+// Example usage
+
 export function getInitials(name: string): string {
   // Split the name by spaces to get individual words
   const words = name.trim().split(" ");

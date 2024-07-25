@@ -58,17 +58,26 @@ function extractHour(endTime: string): number {
   return date.getHours();
 }
 
-function extractDay(endTime: string): string {
-  const date = new Date(endTime);
-  return date.toISOString().split("T")[0]; // Format as "YYYY-MM-DD"
+function filterTracks(tracks: any[], period: string, startDate?: string, endDate?: string): any[] {
+  const now = new Date();
+  const start = startDate ? new Date(startDate) : null;
+  const end = endDate ? new Date(endDate) : null;
+
+  return tracks.filter(track => {
+      const trackDate = new Date(track.endTime);
+
+      if (period === 'days') {
+          return now.getTime() - trackDate.getTime() <= 30 * 24 * 60 * 60 * 1000;
+      } else if (period === 'months') {
+          return now.getTime() - trackDate.getTime() <= 12 * 30 * 24 * 60 * 60 * 1000;
+      } else if (period === 'years') {
+          return now.getTime() - trackDate.getTime() <= 5 * 12 * 30 * 24 * 60 * 60 * 1000;
+      } else if (period === 'custom' && start && end) {
+          return trackDate >= start && trackDate <= end;
+      }
+      return false;
+  });
 }
-
-function extractMonth(endTime: string): string {
-  const date = new Date(endTime);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`; // Format as "YYYY-MM"
-}
-
-
 
 function extractPeriod(
   endTime: string,
@@ -94,8 +103,8 @@ function extractPeriod(
 export function processData(
   artistsArray: Artist[],
   tracksArray: Track[],
-  periodType: "days" | "months" | "years" | "custom",
-
+  periodType: "days" | "months" | "years",
+  startDate?:string, endDate?:string
 ) {
   const now = new Date();
   let filterStartDate: Date;
@@ -109,17 +118,15 @@ export function processData(
     throw new Error("Invalid period type");
   }
 
+  // Create a map to quickly lookup the segment of an artist
   const artistSegmentMap: { [artistName: string]: string } = {};
   artistsArray.forEach((artist) => {
     artistSegmentMap[artist.artistName] = artist.segment;
   });
 
+  // Aggregate track data
   const trackDataMap: { [trackName: string]: TrackData } = {};
   const trackPeriodMap: TrackPeriodMap = {};
-  const activeTimesMap: { [hour: number]: number } = {};
-  const activeDaysMap: { [day: string]: number } = {};
-  const activeMonthsMap: { [month: string]: number } = {};
-
   tracksArray.forEach((track) => {
     const endTime = new Date(track.endTime);
     if (endTime < filterStartDate) return; // Filter out old data
@@ -128,9 +135,6 @@ export function processData(
     const artistName = track.artistName;
     const period = extractPeriod(track.endTime, periodType);
     const minutesPlayed = msToMinutes(track.msPlayed);
-    const hour = extractHour(track.endTime);
-    const day = extractDay(track.endTime);
-    const month = extractMonth(track.endTime);
 
     if (!trackDataMap[trackName]) {
       trackDataMap[trackName] = {
@@ -158,23 +162,9 @@ export function processData(
       trackPeriodMap[trackName][period] = 0;
     }
     trackPeriodMap[trackName][period] += minutesPlayed;
-
-    if (!activeTimesMap[hour]) {
-      activeTimesMap[hour] = 0;
-    }
-    activeTimesMap[hour] += minutesPlayed;
-
-    if (!activeDaysMap[day]) {
-      activeDaysMap[day] = 0;
-    }
-    activeDaysMap[day] += minutesPlayed;
-
-    if (!activeMonthsMap[month]) {
-      activeMonthsMap[month] = 0;
-    }
-    activeMonthsMap[month] += minutesPlayed;
   });
 
+  // Aggregate artist data
   const artistDataMap: { [artistName: string]: ArtistData } = {};
   tracksArray.forEach((track) => {
     const endTime = new Date(track.endTime);
@@ -194,9 +184,11 @@ export function processData(
     artistDataMap[artist].minutesPlayed += minutesPlayed;
   });
 
+  // Convert maps to arrays
   const artistData: ArtistData[] = Object.values(artistDataMap);
   const trackData: TrackData[] = Object.values(trackDataMap);
 
+  // Convert trackPeriodMap to a more readable format
   const trackPeriodsData: TrackPeriodsData = {};
   for (const [trackName, periods] of Object.entries(trackPeriodMap)) {
     const sortedPeriods = Object.entries(periods)
@@ -206,28 +198,38 @@ export function processData(
     trackPeriodsData[trackName] = sortedPeriods;
   }
 
+  // Integrate trackPeriodsData into trackData
   trackData.forEach((track) => {
     track.periods = trackPeriodsData[track.trackName] || [];
   });
 
-  artistData.sort((a, b) => b.minutesPlayed - a.minutesPlayed);
-  trackData.sort((a, b) => b.minutesPlayed - a.minutesPlayed);
+    artistData.sort((a,b)=>(b.minutesPlayed - a.minutesPlayed))
+    trackData.sort((a,b)=>(b.minutesPlayed - a.minutesPlayed))
 
-  const activeTimes = Object.entries(activeTimesMap)
-    .map(([hour, minutes]) => ({ hour: parseInt(hour), minutesPlayed: minutes }))
-    .sort((a, b) => b.minutesPlayed - a.minutesPlayed);
 
-  const activeDays = Object.entries(activeDaysMap)
-    .map(([day, minutes]) => ({ day, minutesPlayed: minutes }))
-    .sort((a, b) => b.minutesPlayed - a.minutesPlayed);
 
-  const activeMonths = Object.entries(activeMonthsMap)
-    .map(([month, minutes]) => ({ month, minutesPlayed: minutes }))
-    .sort((a, b) => b.minutesPlayed - a.minutesPlayed);
+  
+    // Aggregate active times
+    const activeTimesMap: { [key: number]: number } = {};
+    const filteredTracks = filterTracks(tracksArray, 'months', startDate, endDate);
+    filteredTracks.forEach(track => {
+        const hour = extractHour(track.endTime);
+        const minutesPlayed = msToMinutes(track.msPlayed);
 
-  return { artistData, trackData, activeTimes, activeDays, activeMonths };
+        if (!activeTimesMap[hour]) {
+            activeTimesMap[hour] = 0;
+        }
+        activeTimesMap[hour] += minutesPlayed;
+    });
+
+    // Convert maps to arrays
+    
+    const activeTimes = Object.entries(activeTimesMap)
+        .map(([hour, minutes]) => ({ hour: parseInt(hour), minutesPlayed: minutes }))
+        .sort((a, b) => b.minutesPlayed - a.minutesPlayed);
+
+  return { artistData, trackData, activeTimes};
 }
-
 
 
 
@@ -259,7 +261,7 @@ interface PeriodData {
 // Function to convert milliseconds to minutes
 
 // Function to process data for a given period type or date range
-export function processListeningData(
+function processListeningData(
   tracksArray: Track[],
   podcastArray: Podcast[],
   periodType: "days" | "months" | "years" | "custom",
@@ -340,3 +342,27 @@ export function processListeningData(
 
   return periodData;
 }
+
+// Example usage
+
+// Process data for different periods and write to files
+
+// const resultMonths = processListeningData(tracksArray, podcastArray, "months");
+// writeResultsToFile("listening_data_months.json", resultMonths);
+
+// const resultYears = processListeningData(tracksArray, podcastArray, "years");
+// writeResultsToFile("listening_data_years.json", resultYears);
+
+// // Process data for a custom period and write to file
+// const startDate = "2024-01-01";
+// const endDate = "2024-01-31";
+// const resultCustomPeriod = processListeningData(
+//   tracksArray,
+//   podcastArray,
+//   "custom",
+//   startDate,
+//   endDate
+// );
+// writeResultsToFile("listening_data_custom.json", resultCustomPeriod);
+
+// console.log('Data has been written to files in the "json" folder.');
