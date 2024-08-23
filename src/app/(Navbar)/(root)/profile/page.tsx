@@ -40,8 +40,8 @@ export default function Profile() {
       <div className="max-w-7xl p-8 nav-height">
         <div className="relative flex flex-col w-full min-w-0 mb-6 break-words border border-dashed bg-clip-border rounded-2xl border-stone-200 bg-light/30 draggable">
           <div className="px-9 pt-9 flex-auto min-h-[70px] pb-0 bg-transparent">
-            <div className="flex flex-wrap mb-6 xl:flex-nowrap">
-              <div className="mb-5 mr-5">
+            <div className="flex mb-6 xl:flex-nowrap">
+              <div className="flex-shrink-0 mb-5 mr-5">
                 <div
                   className={`relative inline-block shrink-0  cursor-pointer  ${
                     user?.images?.length
@@ -66,14 +66,14 @@ export default function Profile() {
                 </div>
               </div>
               <div className="grow text-white-1">
-                <div className="flex flex-wrap items-start justify-between mb-2">
+                <div className="flex items-start justify-between mb-2">
                   <div className="flex flex-col">
                     <div className="flex items-center mb-2">
                       <span className="text-secondary-inverse hover:text-primary transition-colors duration-200 ease-in-out font-semibold text-[1.5rem] mr-1">
                         {user?.display_name}
                       </span>
                     </div>
-                    <div className="flex flex-wrap pr-2 !text-xs !text-gray-500  font-medium">
+                    <div className="flex pr-2 !text-xs !text-gray-500  font-medium">
                       <span className="flex items-center mb-2 mr-5 text-secondary-dark hover:text-primary">
                         <span className="mr-1">
                           <svg

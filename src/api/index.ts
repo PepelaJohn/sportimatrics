@@ -102,7 +102,11 @@ const getRefreshToken = async (email: string) => {
   }
 };
 
-const renewAccessToken = async (refreshToken: string, email: string) => {
+const renewAccessToken = async (
+  refreshToken: string,
+  email: string,
+  dispatch: React.Dispatch<UnknownAction>
+) => {
   // const refreshToken = localStorage.getItem('refresh_token');
   const url = "https://accounts.spotify.com/api/token";
 
@@ -118,6 +122,10 @@ const renewAccessToken = async (refreshToken: string, email: string) => {
     }),
   };
   const data = await fetch(url, payload);
+  if (!data.ok) {
+    Logout(dispatch);
+    return false;
+  }
   const response = await data.json();
   if (!!response.refresh_token) {
     const payload = {
@@ -155,11 +163,12 @@ const rectifyToken = async (
       userEmail === undefined ||
       userEmail === null ||
       userEmail === "undefined"
-    )
+    ) {
       Logout(dispatch);
+    }
 
     const refresh_token = await getRefreshToken(userEmail);
-    renewAccessToken(refresh_token, userEmail);
+    renewAccessToken(refresh_token, userEmail, dispatch);
   }
 };
 export async function getProfile(
@@ -177,7 +186,6 @@ export async function getProfile(
   } catch (error: any) {
     dispatch({ type: ERROR, payload: "Please Refresh the page!" });
 
-    console.log(error);
     rectifyToken(error, dispatch);
   }
 }
@@ -209,6 +217,7 @@ export const Logout = async (dispatch: React.Dispatch<UnknownAction>) => {
       cookie.remove("_gtPaotwcsA");
       dispatch({ type: SUCCESS, payload: "Logged Out" });
 
+      
       if (typeof window !== "undefined" && typeof window !== undefined) {
         window.location.href = "http://localhost:3000";
       }
@@ -350,8 +359,8 @@ export const getFormDB = async () => {
       payload
     );
     const data = await promiseData.json();
-  
-    return data
+
+    return data;
   } catch (error: any) {
     console.table(error);
   }

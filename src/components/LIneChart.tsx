@@ -22,7 +22,7 @@ const MinutesPlayedLineChart: React.FC<MinutesPlayedLineChartProps> = ({ data })
         fill: false,
         borderColor: 'rgba(75, 192, 192, 0.6)',
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        tension: 0.1
+        tension: 0.4
       },
     ],
   };
@@ -34,7 +34,7 @@ const MinutesPlayedLineChart: React.FC<MinutesPlayedLineChartProps> = ({ data })
         position: 'top' as const,
       },
       title: {
-        display: true,
+        display: false,
         text: 'Minutes Played Per Hour',
       },
     },

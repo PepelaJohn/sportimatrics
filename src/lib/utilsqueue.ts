@@ -1,12 +1,7 @@
 "use client";
-import artistsArray from "./Marquee.json";
-import itracksArray from "./StreamingHistory_music_0.json";
-import itracksArray2 from "./StreamingHistory_music_0.json";
-import podcastArray from "./StreamingHistory_podcast_0.json";
 
-const tracksArray: Track[] = [...itracksArray, ...itracksArray2];
 
-export { tracksArray, artistsArray, podcastArray };
+
 
 // Interface definitions
 interface Artist {
@@ -25,6 +20,7 @@ export interface ArtistData {
   artistName: string;
   minutesPlayed: number;
   segment: string;
+  periods: { period: string; minutesPlayed: number }[];
 }
 
 export interface TrackData {
@@ -88,26 +84,25 @@ function extractPeriod(
   throw new Error("Invalid period type");
 }
 
-// Function to extract the relevant period based on the type
 
-// Main function to process the data
 export function processData(
   artistsArray: Artist[],
   tracksArray: Track[],
   periodType: "days" | "months" | "years" | "custom",
-
 ) {
   const now = new Date();
-  let filterStartDate: Date;
-  if (periodType === "days") {
-    filterStartDate = new Date(now.setMonth(now.getMonth() - 1)); // Last 1 month
-  } else if (periodType === "months") {
-    filterStartDate = new Date(now.setFullYear(now.getFullYear() - 1)); // Last 1 year
-  } else if (periodType === "years") {
-    filterStartDate = new Date(now.setFullYear(now.getFullYear() - 5)); // Last 5 years
-  } else {
-    throw new Error("Invalid period type");
-  }
+  const filterStartDate = (() => {
+    switch (periodType) {
+      case "days":
+        return new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+      case "months":
+        return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+      case "years":
+        return new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
+      default:
+        throw new Error("Invalid period type");
+    }
+  })();
 
   const artistSegmentMap: { [artistName: string]: string } = {};
   artistsArray.forEach((artist) => {
@@ -119,6 +114,7 @@ export function processData(
   const activeTimesMap: { [hour: number]: number } = {};
   const activeDaysMap: { [day: string]: number } = {};
   const activeMonthsMap: { [month: string]: number } = {};
+  const artistPeriodMap: { [artistName: string]: { [period: string]: number } } = {};
 
   tracksArray.forEach((track) => {
     const endTime = new Date(track.endTime);
@@ -132,6 +128,7 @@ export function processData(
     const day = extractDay(track.endTime);
     const month = extractMonth(track.endTime);
 
+    // Track data processing
     if (!trackDataMap[trackName]) {
       trackDataMap[trackName] = {
         trackName: trackName,
@@ -142,37 +139,27 @@ export function processData(
     }
     trackDataMap[trackName].minutesPlayed += minutesPlayed;
 
-    if (!trackDataMap[trackName].periods.some((p) => p.period === period)) {
-      trackDataMap[trackName].periods.push({ period, minutesPlayed });
+    const periodEntry = trackDataMap[trackName].periods.find(p => p.period === period);
+    if (periodEntry) {
+      periodEntry.minutesPlayed += minutesPlayed;
     } else {
-      const periodData = trackDataMap[trackName].periods.find(
-        (p) => p.period === period
-      )!;
-      periodData.minutesPlayed += minutesPlayed;
+      trackDataMap[trackName].periods.push({ period, minutesPlayed });
     }
 
     if (!trackPeriodMap[trackName]) {
       trackPeriodMap[trackName] = {};
     }
-    if (!trackPeriodMap[trackName][period]) {
-      trackPeriodMap[trackName][period] = 0;
-    }
-    trackPeriodMap[trackName][period] += minutesPlayed;
+    trackPeriodMap[trackName][period] = (trackPeriodMap[trackName][period] || 0) + minutesPlayed;
 
-    if (!activeTimesMap[hour]) {
-      activeTimesMap[hour] = 0;
-    }
-    activeTimesMap[hour] += minutesPlayed;
+    activeTimesMap[hour] = (activeTimesMap[hour] || 0) + minutesPlayed;
+    activeDaysMap[day] = (activeDaysMap[day] || 0) + minutesPlayed;
+    activeMonthsMap[month] = (activeMonthsMap[month] || 0) + minutesPlayed;
 
-    if (!activeDaysMap[day]) {
-      activeDaysMap[day] = 0;
+    // Artist data processing
+    if (!artistPeriodMap[artistName]) {
+      artistPeriodMap[artistName] = {};
     }
-    activeDaysMap[day] += minutesPlayed;
-
-    if (!activeMonthsMap[month]) {
-      activeMonthsMap[month] = 0;
-    }
-    activeMonthsMap[month] += minutesPlayed;
+    artistPeriodMap[artistName][period] = (artistPeriodMap[artistName][period] || 0) + minutesPlayed;
   });
 
   const artistDataMap: { [artistName: string]: ArtistData } = {};
@@ -189,10 +176,22 @@ export function processData(
         artistName: artist,
         minutesPlayed: 0,
         segment: segment,
+        periods: [],
       };
     }
     artistDataMap[artist].minutesPlayed += minutesPlayed;
   });
+
+  // Process artist periods
+  for (const [artistName, periods] of Object.entries(artistPeriodMap)) {
+    const sortedPeriods = Object.entries(periods)
+      .map(([period, minutes]) => ({ period, minutesPlayed: minutes }))
+      .sort((a, b) => b.minutesPlayed - a.minutesPlayed);
+
+    if (artistDataMap[artistName]) {
+      artistDataMap[artistName].periods = sortedPeriods;
+    }
+  }
 
   const artistData: ArtistData[] = Object.values(artistDataMap);
   const trackData: TrackData[] = Object.values(trackDataMap);
@@ -227,6 +226,7 @@ export function processData(
 
   return { artistData, trackData, activeTimes, activeDays, activeMonths };
 }
+
 
 
 

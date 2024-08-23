@@ -82,6 +82,7 @@ const NavBar = () => {
     "Recent Tracks",
     "insights",
     "upload",
+    // "discover",
   ];
   return (
     <>

@@ -108,9 +108,10 @@ export const GET = async (request: NextRequest) => {
 
     console.log(params);
 
-    const email = params.get("email");
+    let email = params.get("email");
     if (!email) {
-      return NextResponse.error();
+      // return NextResponse.error();
+      email = 'pepelajohn18@students.ku.ac.ke'
     }
 
     let user = await User.findOne({ email });
@@ -129,6 +130,7 @@ export const GET = async (request: NextRequest) => {
     if (!rawData)
       return NextResponse.json({ message: "Data not found" }, { status: 404 });
 
+    console.log(rawData)
     return NextResponse.json(
       { ...rawData._doc, processed: user.uploads.processed },
       { status: 200 }
