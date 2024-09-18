@@ -18,10 +18,16 @@ import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { ERROR } from "@/constants";
 import { ComboboxDemo } from "@/components/ComboBOx";
+import DatePicker from "react-datepicker";
 
 export default function Profile() {
   const router = useRouter();
   const dispatch = useDispatch();
+
+  const [customDate, setCustomDate] = useState<{
+    customStartDate?:  Date ;
+    customEndDate?:  Date ;
+  } | null>(null);
 
   const [value, setValue] = useState<"months" | "days" | "years" | "custom">(
     "months"
@@ -80,14 +86,26 @@ export default function Profile() {
         podcast_history: podcastArray,
         processed,
       } = dataz;
-      const dt = processData(artistsArray, tracksArray, value);
+
+      const dt = processData(
+        artistsArray,
+        tracksArray,
+        value,
+        customDate!?.customStartDate,
+        customDate!?.customEndDate
+      );
       const dtx = processListeningData(tracksArray, podcastArray, "years");
 
       // localStorage.setItem("processed", processed.toString());
       setData(dt);
       console.log(dt);
     };
-    !!Object.keys(user).length && getDataFromDB();
+
+    if (value === "custom") {
+      
+    } else {
+      !!Object.keys(user).length && getDataFromDB();
+    }
   }, [value]);
 
   useEffect(() => {
@@ -120,8 +138,9 @@ export default function Profile() {
   return (
     <div className="min-h-screen h-full  w-full max-w-full gap-5 flex mb-5 flex-col items-center px-2  text-gray-100">
       <div className="max-w-5xl  nav-height"></div>
-      <div className="border-gray-800 bg-gray-900  lg:max-w-[800px] flex items-center justify-center w-full px-1 lg:py-6  py-3">
+      <div className="border-gray-800 bg-gray-900  lg:max-w-[800px] flex items-center justify-between w-full px-1 lg:py-6  py-3">
         <ComboboxDemo value={value} setValue={setValue} />
+        <DatePicker/>
       </div>
 
       <div className=" border border-gray-800 bg-gray-900  lg:max-w-[800px]  w-full  lg:p-10 py-3 flex flex-col overflow-hidden items-center justify-center ">
