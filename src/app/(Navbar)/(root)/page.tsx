@@ -2,26 +2,41 @@
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import LoaderSpinner from "@/components/LoaderSpinner";
-import { Suspense, useRef, useState } from "react";
-import Image1 from "@/public/img/small/drake.jpg";
-import Image2 from "@/public/img/small/riri.jpg";
-import Image3 from "@/public/img/small/gunna.jpg";
-import { StaticImageData } from "next/image";
+import { Suspense, useEffect, useState } from "react";
 import { IoIosArrowUp } from "react-icons/io";
-import { useDispatch } from "react-redux";
-import { LoginUser } from "@/redux/actions/user";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/redux/store/StoreProvider";
-import Alert from "@/components/Alert";
+import Link from "next/link";
+import { getuserTopItems } from "@/api";
+import { ERROR } from "@/constants";
 gsap.registerPlugin(useGSAP);
 
 const Home = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const handleCreateUser = () => {
-    dispatch(LoginUser);
-    console.log("done");
-  };
-  const images: StaticImageData[] = [Image1, Image2, Image3];
+  const user = useSelector((state: any) => state.user);
+  const loggedIn = !!Object.keys(user).length;
+
   const [loading, setLoading] = useState(false);
+  const [topArtists, settopArtists] = useState<IArtist[] | []>([]);
+
+  useEffect(() => {
+    const getData = async () => {
+      setLoading(true);
+      const promiseData: any = await getuserTopItems(
+        "artists",
+        "long_term",
+        dispatch as React.Dispatch<UnknownAction>,
+        3,
+        0
+      );
+
+      if (!!promiseData) {
+        settopArtists(promiseData);
+      }
+      setLoading(false);
+    };
+    getData();
+  }, []);
 
   useGSAP(() => {
     gsap.to(".border-bottom", {
@@ -50,12 +65,13 @@ const Home = () => {
       ease: "expo.inOut",
     });
 
-    gsap.from(".readmore", {
-      delay: 2.8,
-      opacity: 0,
-      x: -20,
-      ease: "expo.inOut",
-    });
+    window.document.getElementsByClassName(".readmore") &&
+      gsap.from(".readmore", {
+        delay: 2.8,
+        opacity: 0,
+        x: -20,
+        ease: "expo.inOut",
+      });
 
     gsap.to(".img-item", {
       delay: 2.2,
@@ -91,66 +107,93 @@ const Home = () => {
   });
 
   return (
-    <section className="w-full max-h-[100vh] h-full   overflow-x-hidden text-white-1 !overflow-hidden !max-w-[100vw]">
+    <section className="w-full max-h-[100vh] h-full  overflow-x-hidden text-white-1 !overflow-hidden !max-w-[100vw]">
       <div className="overlay first"></div>
       <div className="overlay second"></div>
       <div className="overlay third"></div>
-      <div className="wrapper absolute top-0 left-0 right-0 h-[100px]">
-        <div className="nav"></div>
-      </div>
-      <hr className="border-bottom" />
+      <span className="fixed top-[100px] w-full left-0 right-0">
+        <hr className=" " />
+      </span>
 
       <Suspense fallback={<LoaderSpinner />}>
-        <div className="content  items-center justify-center h-full   flex px-5">
-          <div className="mx-width flex h-full items-center w-full max-lg:flex-col">
-            <div className="text  md:h-full md:pr-20 items-center max-md:items-start max-md:justify-start max-md:mt-[130px] justify-center flex-col flex max-md:mb-10 md:flex-1">
+        <div className="content  items-center justify-center h-full  nav-height flex-col flex px-5">
+          <div className="mx-width flex h-f items-center w-full max-lg:flex-col">
+            <div className="text easeinOut md:h-full md:pr-20 items-center max-md:items-start max-md:justify-start max-md:mt-[130px] justify-center flex-col flex max-md:mb-10 md:flex-1">
               <div className="">
                 <p className="subtitle text-[#ffffff80] text-xs max-md:text-[10px] uppercase">
                   your stats
                 </p>
                 <h1 className="title max-[540px]:text-2xl  max-md:text-3xl max-xl:text-[60px] text-[70px] font-semibold uppercase w-0 whitespace-nowrap">
-                  SPOTIMETRICS
+                  MUSIMETER
                 </h1>
                 <p className="desc max-md:text-sm max-[540px]:text-xs">
-                Uncover Your  Listening Stats <br />
-                  <span className="readmore md:my-1 cursor-pointer">
-                  Relive Your Music Moments
+                  Uncover Your Listening Stats <br />
+                  <span className=" md:my-1 cursor-pointer">
+                    Relive Your Music Moments
                   </span>
                   <br />
                   Explore Your Personalized Music Journey!!
                 </p>
 
-                <a
-                  href="#"
-                  className="readmore mt-10 max-md:mt-4 max-[540px]:mt-2 max-[540px]:text-xs max-md:text-sm"
-                >
-                  START
-                </a>
+                {!loggedIn && (
+                  <Link
+                    href="/auth"
+                    className="readmore mt-10 max-md:mt-4 max-[540px]:mt-2 max-[540px]:text-xs max-md:text-sm"
+                  >
+                    START EXPLORING
+                  </Link>
+                )}
               </div>
-              {/* <button
-                onClick={() => handleCreateUser()}
-                className="bg-green-400 h-8 px-3"
-              >
-                CLICK ME
-              </button> */}
             </div>
 
-            <div className="relative  grid-container w-full z-10 md:pt-[100px]  flex-shrink-0  h-full flex-1 ">
-              <div className="item-4 flex max-w-full overflow-hidden flex-grow-0 w-full items-end justify-end ">
-                <div className="flex items-center gap-2">
-                  <IoIosArrowUp className="text-xs" />
-                  <p className="text-gray-600 text-xs font-extralight">Drake</p>
-                </div>
-              </div>
-              {images.map((image, i) => (
-                <div
-                  key={i}
-                  style={{ backgroundImage: `url(${image.src})` }}
-                  className={`item-${
-                    i + 1
-                  } easeinOut hover:scale-105 cursor-pointer img-item w-full max-w-full h-full `}
-                ></div>
-              ))}
+            <div className="relative  grid-container w-full z-10    flex-shrink-0  h-full flex-1 ">
+              {loggedIn ? (
+                <>
+                  {loading ? (
+                    <LoaderSpinner></LoaderSpinner>
+                  ) : (
+                    <>
+                      {" "}
+                      <div className="item-4 flex max-w-full overflow-hidden flex-grow-0 w-full items-end justify-end ">
+                        <div className="flex items-center gap-2">
+                          <p className="text-gray-400 text-xs font-extralight">
+                            <span className="text-gray-200">1. </span>
+                            {!!topArtists.length && topArtists[0]?.name}
+                          </p>
+                        </div>
+                      </div>
+                      {!!topArtists?.length ? (
+                        topArtists?.map((artist, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              backgroundImage: `url(${artist.images[1].url})`,
+                            }}
+                            className={`item-${
+                              i + 1
+                            } easeinOut hover:scale-105 border-green-300 border cursor-pointer img-item w-full min-w-full max-w-full h-full `}
+                          ></div>
+                        ))
+                      ) : (
+                        <div className="text-white-1 !h-full w-full items-center item-1  flex justify-center text-sm">
+                          No artist data found
+                        </div>
+                      )}
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="text-white-1 !h-full w-full items-center item-1  flex justify-center text-sm">
+                    <Link
+                      className="bg-green-400 px-5 py-1 text-sm uppercase"
+                      href={"/auth"}
+                    >
+                      Login
+                    </Link>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

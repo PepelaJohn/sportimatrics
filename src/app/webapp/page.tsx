@@ -5,6 +5,8 @@ import { getProfile, getToken } from "@/api";
 import { useRouter } from "next/navigation";
 import { getCookie } from "@/lib/utils";
 import { useDispatch } from "react-redux";
+import { ERROR, SIGN_IN } from "@/constants";
+import { Loader } from "lucide-react";
 type Props = {};
 
 function page({
@@ -14,8 +16,7 @@ function page({
 }) {
   const router = useRouter();
 
- 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   if (!searchParams.code) {
     router.push("/auth");
@@ -27,12 +28,15 @@ function page({
   useEffect(() => {
     const getAndCheckAuth = async () => {
       const isAuthenticated = await getToken();
+     
+      alert("after is authenitcated form get profile")
+      
       if (isAuthenticated.authenticated) {
         let user = getProfile(dispatch as React.Dispatch<UnknownAction>);
         user.then(async function (result: any) {
           if (result.display_name) {
-            
-            localStorage.setItem("user", JSON.stringify(result));
+            dispatch({ type: SIGN_IN, payload: result });
+
             const payload = {
               method: "POST",
               headers: {
@@ -49,14 +53,20 @@ function page({
               payload
             );
             const data = await promiseData.json();
+           
+            alert();
+
             if (data.status === 200) {
               router.replace("/");
+              dispatch({ type: SIGN_IN, payload: result });
             } else {
+              dispatch({ type: ERROR, payload: "Failed to login" });
               router.replace("/auth");
             }
           }
         });
       } else {
+        dispatch({ type: ERROR, payload: "Failed to login" });
         router.replace("/auth");
       }
     };
@@ -64,7 +74,12 @@ function page({
     getAndCheckAuth();
   }, []);
 
-  return <LoaderSpinner />;
+  return (
+    <div className="flex flex-col items-center justify-center h-[100vh] w-full">
+      <Loader className="animate-spin text-green-400" size={30} />
+      <span className="text-white-1 text-sm">Please Wait...</span>
+    </div>
+  );
 }
 
 export default page;

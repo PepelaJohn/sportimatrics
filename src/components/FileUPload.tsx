@@ -53,7 +53,7 @@ const FileUpload = ({
           // After reading all chunks, you can send the file to the backend here
 
           await uploadToDB({ file: JSON.stringify(reader.result) });
-          console.log(JSON.stringify(["reader.result"]));
+          
         }
       }
     };

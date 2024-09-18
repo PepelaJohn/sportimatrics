@@ -3,12 +3,22 @@
 import { fetchRecentTracks } from "@/api";
 import React, { useEffect, useState } from "react";
 import LoaderSpinner from "@/components/LoaderSpinner";
-import { formatDateTime, timeSince } from "@/lib/utils";
-import { useDispatch } from "react-redux";
+import { timeSince } from "@/lib/utils";
+import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import { ERROR } from "@/constants";
 
 export default function TopSongs() {
   const [topTracks, setTopTracks] = useState<RTrackType[] | null>(null);
   const dispatch = useDispatch();
+
+  const router = useRouter();
+
+  const user = useSelector((state: any) => state.user);
+  if (!Object.keys(user).length) {
+    dispatch({ type: ERROR, payload: "Please Login first" });
+    router.replace("/auth");
+  }
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {

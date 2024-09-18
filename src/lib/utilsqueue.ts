@@ -64,45 +64,80 @@ function extractMonth(endTime: string): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`; // Format as "YYYY-MM"
 }
 
-
-
 function extractPeriod(
   endTime: string,
-  periodType: "days" | "months" | "years"
+  periodType: "days" | "months" | "years" | "custom"
 ): string {
   const date = new Date(endTime);
+
   if (periodType === "days") {
     return date.toISOString().split("T")[0]; // Format date as "YYYY-MM-DD"
   } else if (periodType === "months") {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}`; // Format month as "YYYY-MM"
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`; // Format month as "YYYY-MM"
   } else if (periodType === "years") {
     return `${date.getFullYear()}`; // Format year as "YYYY"
+  } else if (periodType === "custom") {
+    return date.toISOString().split("T")[0]; // For custom, return "YYYY-MM-DD"
   }
+
   throw new Error("Invalid period type");
 }
 
+
+{
+//   function extractPeriod(
+//   endTime: string,
+//   periodType: "days" | "months" | "years"
+// ): string {
+//   const date = new Date(endTime);
+//   if (periodType === "days") {
+//     return date.toISOString().split("T")[0]; // Format date as "YYYY-MM-DD"
+//   } else if (periodType === "months") {
+//     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+//       2,
+//       "0"
+//     )}`; // Format month as "YYYY-MM"
+//   } else if (periodType === "years") {
+//     return `${date.getFullYear()}`; // Format year as "YYYY"
+//   }
+//   throw new Error("Invalid period type");
+// }
+}
 
 export function processData(
   artistsArray: Artist[],
   tracksArray: Track[],
   periodType: "days" | "months" | "years" | "custom",
+  customStartDate?: Date,
+  customEndDate?: Date
 ) {
   const now = new Date();
-  const filterStartDate = (() => {
-    switch (periodType) {
-      case "days":
-        return new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-      case "months":
-        return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-      case "years":
-        return new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
-      default:
-        throw new Error("Invalid period type");
-    }
-  })();
+  let filterStartDate: Date;
+  let filterEndDate: Date;
+
+  switch (periodType) {
+    case "days":
+      filterStartDate = new Date(now.getFullYear(), now.getMonth() - 2, now.getDate());
+      filterEndDate = now;
+      break;
+    case "months":
+      filterStartDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+      filterEndDate = now;
+      break;
+    case "years":
+      filterStartDate = new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
+      filterEndDate = now;
+      break;
+    case "custom":
+      if (!customStartDate || !customEndDate) {
+        throw new Error("Custom period type requires both customStartDate and customEndDate.");
+      }
+      filterStartDate = customStartDate;
+      filterEndDate = customEndDate;
+      break;
+    default:
+      throw new Error("Invalid period type");
+  }
 
   const artistSegmentMap: { [artistName: string]: string } = {};
   artistsArray.forEach((artist) => {
@@ -118,7 +153,7 @@ export function processData(
 
   tracksArray.forEach((track) => {
     const endTime = new Date(track.endTime);
-    if (endTime < filterStartDate) return; // Filter out old data
+    if (endTime < filterStartDate || endTime > filterEndDate) return; // Filter out old data
 
     const trackName = track.trackName;
     const artistName = track.artistName;
@@ -165,7 +200,7 @@ export function processData(
   const artistDataMap: { [artistName: string]: ArtistData } = {};
   tracksArray.forEach((track) => {
     const endTime = new Date(track.endTime);
-    if (endTime < filterStartDate) return; // Filter out old data
+    if (endTime < filterStartDate || endTime > filterEndDate) return; // Filter out old data
 
     const artist = track.artistName;
     const minutesPlayed = msToMinutes(track.msPlayed);
@@ -226,6 +261,149 @@ export function processData(
 
   return { artistData, trackData, activeTimes, activeDays, activeMonths };
 }
+
+
+// // export function processData(
+// //   artistsArray: Artist[],
+// //   tracksArray: Track[],
+// //   periodType: "days" | "months" | "years" | "custom",
+// // ) {
+// //   const now = new Date();
+// //   const filterStartDate = (() => {
+// //     switch (periodType) {
+// //       case "days":
+// //         return new Date(now.getFullYear(), now.getMonth() - 2, now.getDate());
+// //       case "months":
+// //         return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+// //       case "years":
+// //         return new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
+// //       default:
+// //         throw new Error("Invalid period type");
+// //     }
+// //   })();
+
+// //   const artistSegmentMap: { [artistName: string]: string } = {};
+// //   artistsArray.forEach((artist) => {
+// //     artistSegmentMap[artist.artistName] = artist.segment;
+// //   });
+
+// //   const trackDataMap: { [trackName: string]: TrackData } = {};
+// //   const trackPeriodMap: TrackPeriodMap = {};
+// //   const activeTimesMap: { [hour: number]: number } = {};
+// //   const activeDaysMap: { [day: string]: number } = {};
+// //   const activeMonthsMap: { [month: string]: number } = {};
+// //   const artistPeriodMap: { [artistName: string]: { [period: string]: number } } = {};
+
+// //   tracksArray.forEach((track) => {
+// //     const endTime = new Date(track.endTime);
+// //     if (endTime < filterStartDate) return; // Filter out old data
+
+// //     const trackName = track.trackName;
+// //     const artistName = track.artistName;
+// //     const period = extractPeriod(track.endTime, periodType);
+// //     const minutesPlayed = msToMinutes(track.msPlayed);
+// //     const hour = extractHour(track.endTime);
+// //     const day = extractDay(track.endTime);
+// //     const month = extractMonth(track.endTime);
+
+// //     // Track data processing
+// //     if (!trackDataMap[trackName]) {
+// //       trackDataMap[trackName] = {
+// //         trackName: trackName,
+// //         artistName: artistName,
+// //         minutesPlayed: 0,
+// //         periods: [],
+// //       };
+// //     }
+// //     trackDataMap[trackName].minutesPlayed += minutesPlayed;
+
+// //     const periodEntry = trackDataMap[trackName].periods.find(p => p.period === period);
+// //     if (periodEntry) {
+// //       periodEntry.minutesPlayed += minutesPlayed;
+// //     } else {
+// //       trackDataMap[trackName].periods.push({ period, minutesPlayed });
+// //     }
+
+// //     if (!trackPeriodMap[trackName]) {
+// //       trackPeriodMap[trackName] = {};
+// //     }
+// //     trackPeriodMap[trackName][period] = (trackPeriodMap[trackName][period] || 0) + minutesPlayed;
+
+// //     activeTimesMap[hour] = (activeTimesMap[hour] || 0) + minutesPlayed;
+// //     activeDaysMap[day] = (activeDaysMap[day] || 0) + minutesPlayed;
+// //     activeMonthsMap[month] = (activeMonthsMap[month] || 0) + minutesPlayed;
+
+// //     // Artist data processing
+// //     if (!artistPeriodMap[artistName]) {
+// //       artistPeriodMap[artistName] = {};
+// //     }
+// //     artistPeriodMap[artistName][period] = (artistPeriodMap[artistName][period] || 0) + minutesPlayed;
+// //   });
+
+// //   const artistDataMap: { [artistName: string]: ArtistData } = {};
+// //   tracksArray.forEach((track) => {
+// //     const endTime = new Date(track.endTime);
+// //     if (endTime < filterStartDate) return; // Filter out old data
+
+// //     const artist = track.artistName;
+// //     const minutesPlayed = msToMinutes(track.msPlayed);
+// //     const segment = artistSegmentMap[artist] || "Unknown Segment";
+
+// //     if (!artistDataMap[artist]) {
+// //       artistDataMap[artist] = {
+// //         artistName: artist,
+// //         minutesPlayed: 0,
+// //         segment: segment,
+// //         periods: [],
+// //       };
+// //     }
+// //     artistDataMap[artist].minutesPlayed += minutesPlayed;
+// //   });
+
+// //   // Process artist periods
+// //   for (const [artistName, periods] of Object.entries(artistPeriodMap)) {
+// //     const sortedPeriods = Object.entries(periods)
+// //       .map(([period, minutes]) => ({ period, minutesPlayed: minutes }))
+// //       .sort((a, b) => b.minutesPlayed - a.minutesPlayed);
+
+// //     if (artistDataMap[artistName]) {
+// //       artistDataMap[artistName].periods = sortedPeriods;
+// //     }
+// //   }
+
+// //   const artistData: ArtistData[] = Object.values(artistDataMap);
+// //   const trackData: TrackData[] = Object.values(trackDataMap);
+
+// //   const trackPeriodsData: TrackPeriodsData = {};
+// //   for (const [trackName, periods] of Object.entries(trackPeriodMap)) {
+// //     const sortedPeriods = Object.entries(periods)
+// //       .map(([period, minutes]) => ({ period, minutesPlayed: minutes }))
+// //       .sort((a, b) => b.minutesPlayed - a.minutesPlayed);
+
+// //     trackPeriodsData[trackName] = sortedPeriods;
+// //   }
+
+// //   trackData.forEach((track) => {
+// //     track.periods = trackPeriodsData[track.trackName] || [];
+// //   });
+
+// //   artistData.sort((a, b) => b.minutesPlayed - a.minutesPlayed);
+// //   trackData.sort((a, b) => b.minutesPlayed - a.minutesPlayed);
+
+// //   const activeTimes = Object.entries(activeTimesMap)
+// //     .map(([hour, minutes]) => ({ hour: parseInt(hour), minutesPlayed: minutes }))
+// //     .sort((a, b) => b.minutesPlayed - a.minutesPlayed);
+
+// //   const activeDays = Object.entries(activeDaysMap)
+// //     .map(([day, minutes]) => ({ day, minutesPlayed: minutes }))
+// //     .sort((a, b) => b.minutesPlayed - a.minutesPlayed);
+
+// //   const activeMonths = Object.entries(activeMonthsMap)
+// //     .map(([month, minutes]) => ({ month, minutesPlayed: minutes }))
+// //     .sort((a, b) => b.minutesPlayed - a.minutesPlayed);
+
+// //   return { artistData, trackData, activeTimes, activeDays, activeMonths };
+// // }
 
 
 
@@ -339,4 +517,4 @@ export function processListeningData(
     .sort((a, b) => b.minutesPlayed - a.minutesPlayed);
 
   return periodData;
-}
+ }

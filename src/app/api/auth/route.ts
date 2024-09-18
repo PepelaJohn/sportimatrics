@@ -6,7 +6,7 @@ export const POST = async (request: NextRequest) => {
   try {
     connectDB();
     const body = await request.json();
-    console.log(body);
+    //console.log(body);
 
     let user = await User.findOne({ email: body.email });
     if (!!user) {
@@ -25,7 +25,7 @@ export const POST = async (request: NextRequest) => {
       path: "/refresh",
     });
 
-    return NextResponse.json({ status: 200 });
+    return NextResponse.json({user},{ status: 200 });
   } catch (error) {
     console.log(error);
     // throw new Error(error as string);

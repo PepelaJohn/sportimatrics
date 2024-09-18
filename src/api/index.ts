@@ -1,5 +1,5 @@
 "use client";
-import { ERROR, SUCCESS } from "@/constants";
+import { ERROR, SIGN_OUT, SUCCESS } from "@/constants";
 import { getCookie } from "@/lib/utils";
 import axios from "axios";
 import dotenv from "dotenv";
@@ -48,7 +48,7 @@ export async function pkce_challenge_from_verifier(v: string) {
 
 // the response has a code that can be exchanged for the access token
 export const getToken = async () => {
-  const codeVerifier = window.localStorage.getItem("code_verifier");
+  const codeVerifier =  window.localStorage.getItem("code_verifier");
   if (!codeVerifier) return { authenticated: false };
   const urlParams = new URLSearchParams(window.location.search);
   let code = urlParams.get("code")!;
@@ -68,7 +68,7 @@ export const getToken = async () => {
 
   const body = await fetch(apiUrl, payload);
   const response = await body.json();
-  // console.log(response);
+
 
   if (!!response.access_token) {
     cookie.set("_gtPaotwcsA", response.access_token, { expires: 3600 });
@@ -97,7 +97,7 @@ const getRefreshToken = async (email: string) => {
     const data = await promiseData.json();
     return data.refresh_token;
   } catch (error: any) {
-    console.warn(error, "error in getrefreshToken");
+    ////console.warn(error, "error in getrefreshToken");
     // throw new Error(error)
   }
 };
@@ -123,7 +123,7 @@ const renewAccessToken = async (
   };
   const data = await fetch(url, payload);
   if (!data.ok) {
-    Logout(dispatch);
+    Logout(dispatch, email);
     return false;
   }
   const response = await data.json();
@@ -164,7 +164,7 @@ const rectifyToken = async (
       userEmail === null ||
       userEmail === "undefined"
     ) {
-      Logout(dispatch);
+      Logout(dispatch, userEmail);
     }
 
     const refresh_token = await getRefreshToken(userEmail);
@@ -190,42 +190,47 @@ export async function getProfile(
   }
 }
 
-export const Logout = async (dispatch: React.Dispatch<UnknownAction>) => {
+export const Logout = async (
+  dispatch: React.Dispatch<UnknownAction>,
+  userEmail: string
+) => {
   try {
-    const userEmail = JSON.parse(localStorage.getItem("user")!)?.email;
     if (!userEmail) {
       dispatch({ type: ERROR, payload: "Unable to complete request" });
-    }
-    const payload = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: userEmail,
-      }),
-    };
+    } else {
+      const payload = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: userEmail,
+        }),
+      };
 
-    const promiseData = await fetch(
-      "http://localhost:3000/api/logout",
-      payload
-    );
-    const data = await promiseData.json();
+      const promiseData = await fetch(
+        "http://localhost:3000/api/logout",
+        payload
+      );
+      const data = await promiseData.json();
 
-    if (data.status === 200) {
-      localStorage.clear();
-      cookie.remove("_gtPaotwcsA");
-      dispatch({ type: SUCCESS, payload: "Logged Out" });
+      if (data.status === 200) {
+        // localStorage.clear();
 
-      
-      if (typeof window !== "undefined" && typeof window !== undefined) {
-        window.location.href = "http://localhost:3000";
+        
       }
     }
-    return data;
+
+    dispatch({ type: SIGN_OUT });
+    cookie.remove("_gtPaotwcsA");
+    dispatch({ type: SUCCESS, payload: "Logged Out" });
+    if (typeof window !== "undefined" && typeof window !== undefined) {
+      window.location.href = "http://localhost:3000";
+    }
+    return;
   } catch (error: any) {
     dispatch({ type: ERROR, payload: "Failed to logout" });
-    console.warn(error.message, "Logout component");
+    //console.warn(error.message, "Logout component");
   }
 };
 
@@ -247,7 +252,7 @@ export async function fetchRecentTracks(
 
     return recentTracks;
   } catch (error: any) {
-    console.error("Error fetching recently played tracks:", error.message);
+    //console.error("Error fetching recently played tracks:", error.message);
     rectifyToken(error, dispatch);
   }
 }
@@ -257,7 +262,7 @@ export const searchSpotify = async (
   setsearchData: React.Dispatch<React.SetStateAction<{ [key: string]: any }>>,
   dispatch: React.Dispatch<UnknownAction>
 ) => {
-  console.log(query, "search spotify");
+ 
 
   const q = query.split(" ").join("+");
   try {
@@ -265,7 +270,7 @@ export const searchSpotify = async (
     if (!accessToken) return;
     // const querystring = `q` + query.split(" ").join("%20");
     const response = await axios.get(
-      `https://api.spotify.com/v1/search?q=${q}&type=track%2Cartist%2Calbum`,
+      `https://api.spotify.com/v1/search?q=${q}&type=track%2Cartist%2Calbum&limit=10`,
       {
         headers: {
           Authorization: "Bearer " + accessToken,
@@ -274,7 +279,7 @@ export const searchSpotify = async (
     );
 
     const data = await response.data;
-    console.log(data, "search");
+  
     setsearchData(data);
     return data;
   } catch (error: any) {
@@ -338,9 +343,9 @@ export const uploadToDB = async (formData: { [key: string]: any }) => {
       payload
     );
     const data = await promiseData.json();
-    console.log(data);
+    
   } catch (error: any) {
-    console.table(error);
+    //console.table(error);
   }
 };
 export const getFormDB = async () => {
@@ -362,6 +367,6 @@ export const getFormDB = async () => {
 
     return data;
   } catch (error: any) {
-    console.table(error);
+    //console.table(error);
   }
 };

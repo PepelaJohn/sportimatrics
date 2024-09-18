@@ -9,13 +9,16 @@ import {
 import { useEffect } from "react";
 import { getCookie } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+
 import {SignpostIcon as Spotify} from 'lucide-react'
+import { useDispatch } from "react-redux";
 const scope =
   "user-read-private user-read-email user-read-playback-state  playlist-read-private playlist-read-collaborative user-follow-read user-top-read user-read-recently-played";
 const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID!;
 const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_URI!;
 
 const page = () => {
+  const dispatch = useDispatch()
   const router = useRouter();
   useEffect(() => {
     if (!!getCookie("_gtPaotwcsA")) {
@@ -38,7 +41,7 @@ const page = () => {
         "+"
       )}&code_challenge_method=S256&code_challenge=${codeChallenge}&redirect_uri=${redirectUri}&show_dialog=true`;
     const url = (authUrl + querystring) as unknown as Location;
-    console.log(codeVerifier);
+    //console.log(codeVerifier);
 
     window.location = url;
   };

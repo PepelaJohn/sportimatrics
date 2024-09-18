@@ -162,4 +162,4 @@ const endDate = "2024-01-31";
 const resultCustomPeriod = processListeningData(tracksArray, podcastArray, 'custom', startDate, endDate);
 writeResultsToFile('listening_data_custom.json', resultCustomPeriod);
 
-console.log('Data has been written to files in the "json" folder.');
+// console.log('Data has been written to files in the "json" folder.');

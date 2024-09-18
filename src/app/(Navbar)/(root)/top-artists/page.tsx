@@ -5,7 +5,8 @@ import React, { useEffect, useState } from "react";
 import LoaderSpinner from "@/components/LoaderSpinner";
 import { formatNumberWithCommas } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { ERROR } from "@/constants";
 
 export default function TopSongs({
   searchParams,
@@ -14,6 +15,13 @@ export default function TopSongs({
 }) {
   const [topTracks, setTopTracks] = useState<IArtist[] | null>(null);
   const router = useRouter();
+  const dispatch = useDispatch();
+
+  const user = useSelector((state: any) => state.user);
+  if (!Object.keys(user).length) {
+    dispatch({ type: ERROR, payload: "Please Login first" });
+    router.replace("/auth");
+  }
 
   useEffect(() => {
     if (!searchParams.range) {
@@ -40,7 +48,7 @@ export default function TopSongs({
       : 0
   );
   const sortTime = ["4 Weeks", "6 Months", "Lifetime"];
-  const dispatch = useDispatch()
+
   useEffect(() => {
     const getTopTracks = async () => {
       setLoading(true);
@@ -60,7 +68,13 @@ export default function TopSongs({
         default:
           term = "short_term";
       }
-      const promiseData = await getuserTopItems("artists", term, dispatch as React.Dispatch<UnknownAction> , 20, 0);
+      const promiseData = await getuserTopItems(
+        "artists",
+        term,
+        dispatch as React.Dispatch<UnknownAction>,
+        20,
+        0
+      );
       router.push(`/top-artists?range=${term}`);
       setTopTracks(promiseData);
       setLoading(false);

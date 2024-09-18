@@ -5,31 +5,26 @@ import {
   FooterLink,
   FooterLinkGroup,
 } from "flowbite-react";
-
-
+import Link from "next/link";
 
 const FooterCompoment = () => {
   return (
-    <Footer
-      container
-      className="bg-black-2  flex items-center !rounded-none  !justify-center"
-    >
-      <div className="max-w-5xl max-sm:px-4 sm:px-14 flex  w-full justify-between   ">
-        <FooterCopyright href="#" by="Spotimetrics" year={2022} />
-        <FooterLinkGroup>
-          <FooterLink href="#">About</FooterLink>
-          <FooterLink href="#">Privacy Policy</FooterLink>
-          <FooterLink href="#">Feedback</FooterLink>
-          <FooterLink href="#">Contact</FooterLink>
-          <FooterLink
-            href="https://buymeacoffee.com/spotimetrics"
-            target="_blank"
-          >
-            Donate
-          </FooterLink>
-        </FooterLinkGroup>
-      </div>
-    </Footer>
+    <div className="bg-black-2  flex items-center !h-[70px] !rounded-none text-[11px] text-gray-400 !justify-center">
+      <ul className="flex w-full h-full items-center justify-end px-5">
+        
+        <div className="flex items-center justify-between gap-5">
+          <li>
+            <Link href={"/donate"}>Contact</Link>
+          </li>
+          <li>
+            <Link href={"/donate"}>Donate</Link>
+          </li>
+          <li>
+            <Link href={"/donate"}>Privacy Policy</Link>
+          </li>
+        </div>
+      </ul>
+    </div>
   );
 };
 

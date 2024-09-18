@@ -31,6 +31,10 @@ export function timeSince(isoDateString: string): string {
 }
 
 
+export const getNextHour = (hour:string)=>{
+  return parseInt(hour) === 0o0 ? 0o1 : parseInt(hour) + 1
+}
+
 // utils/formatDateTime.ts
 export function formatDateTime(isoDateString: string): string {
   // Create a Date object
@@ -222,7 +226,7 @@ export const processImage = (
         base64: reader.result,
         file: file,
       };
-      // console.log(fileInfo.type);
+      
       if (fileInfo.type !== "application/json") {
         dispatch({ type: ERROR, payload: "Invalid File Type" });
         return;
@@ -231,7 +235,7 @@ export const processImage = (
       // setFormData({ ...formData, file: fileInfo.base64 });
       // setProgress(100);
       // await uploadToDB({ file: fileInfo.base64 });
-      console.log(fileInfo.base64);
+     
     };
   }
 };

@@ -7,7 +7,7 @@ export const POST = async (request: NextRequest) => {
   try {
     connectDB();
     const req = await request.json();
-    console.log(req.email);
+    //console.log(req.email);
 
     let refresh_token = cookies().get("_gtPaotwcsR");
     if (!refresh_token) {

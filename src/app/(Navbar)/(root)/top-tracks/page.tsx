@@ -4,16 +4,25 @@ import { getuserTopItems } from "@/api";
 import React, { useEffect, useState } from "react";
 import LoaderSpinner from "@/components/LoaderSpinner";
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { ERROR } from "@/constants";
 
 export default function TopSongs({
   searchParams,
 }: {
   searchParams: { range: string };
 }) {
-  const [topTracks, setTopTracks] = useState<TracksType[] | null>(null);
-  const router = useRouter();
   const dispatch = useDispatch()
+  const router = useRouter()
+
+  const user = useSelector((state:any)=>state.user)
+  if (!Object.keys(user).length){
+    dispatch({type:ERROR, payload:"Please Login first"})
+    router.replace('/auth')
+  }
+  const [topTracks, setTopTracks] = useState<TracksType[] | null>(null);
+
+
 
   if (!searchParams.range) {
     router.push("/top-tracks?range=short_term");

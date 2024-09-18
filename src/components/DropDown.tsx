@@ -38,26 +38,18 @@ export default function DropdownMenuDemo({
             {/* <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut> */}
           </DropdownMenuItem>
         </DropdownMenuGroup>
-       
 
-        
         <DropdownMenuItem>
           <LifeBuoy className="mr-2 h-4 w-4" />
-          <Link href={'/donate'}>Donate</Link>
+          <Link href={"/donate"}>Donate</Link>
         </DropdownMenuItem>
 
-        
-        <DropdownMenuSeparator/>
+        <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
-          <span
-            onClick={() => {
-              Logout(dispatch as React.Dispatch<UnknownAction>);
-              router.push("/");
-            }}
-          >
+          <Link className="" href={"/logout"}>
             Log out
-          </span>
+          </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

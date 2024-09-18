@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import Logo from "@/assets/Logo";
+import Logo from "@/assets/logo.png";
 import Link from "next/link";
 import { MdSearch } from "react-icons/md";
 import { IoMdLogOut } from "react-icons/io";
@@ -12,14 +12,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { CLOSE_DISPLAY } from "@/constants";
 import Popup from "./Popup";
 import DropdownMenuDemo from "./DropDown";
-import Toggle from "./Toggle";
 
 const NavBar = () => {
   const [sidebar, setSideBar] = useState<boolean>(false);
 
   const [searchParams, setSearchParams] = useState<string>("");
 
-  const [user, setUser] = useState<promiseUser>();
+  // const [user, setUser] = useState<promiseUser>();
   const pathname = usePathname();
   const router = useRouter();
   const timoeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -27,10 +26,12 @@ const NavBar = () => {
   const popupRef = useRef<any>(null);
   const [loggedIn, setLoggedIn] = useState<boolean>(false);
   const dispatch = useDispatch();
-  // console.log(document.cookie.split(',')[0].split(' '));
-
-  // console.log(typeof(dispatch))
+ 
   const popup = useSelector((state: any) => state.info);
+  const user = useSelector((state: any) => state.user);
+ 
+  
+
   useEffect(() => {
     if (popup.show) {
       // use different variable as this whill happen after variable has changed
@@ -52,21 +53,8 @@ const NavBar = () => {
   }, [popup.show]);
 
   useEffect(() => {
-    if (!!localStorage.getItem("user") || !!getCookie("_gtPaotwcsA")) {
+    if (!!Object.keys(user).length || !!getCookie("_gtPaotwcsA")) {
       setLoggedIn(true);
-      let user;
-      if (!!localStorage.getItem("user")) {
-        user = JSON.parse(localStorage.getItem("user")!);
-        setUser(user);
-      } else {
-        user = getProfile(dispatch as React.Dispatch<UnknownAction>);
-        user.then(function (result: any) {
-          if (!!result?.display_name) {
-            setUser(result);
-            localStorage.setItem("user", JSON.stringify(result));
-          }
-        });
-      }
     } else {
       setLoggedIn(false);
     }
@@ -88,15 +76,15 @@ const NavBar = () => {
     <>
       <nav
         className={`w-full ${
-          pathname === "/" ? " bg-transparent " : "bg-black-3 shadow-2xl "
+          pathname === "/" ? " bg-black-3 " : "bg-black-3 shadow-2xl "
         } easeinOut justify-center  !z-50 text-white   text-12 fixed top-0 left-0 right-0 h-[100px] flex items-center`}
       >
         <div className="max-w-5xl   max-sm:px-4 sm:px-14  w-full h-full flex items-center ">
           <Link
             href={"/"}
-            className="flex items-center justify-center flex-grow-0 flex-shrink-0 h-6 w-6 md:h-8 md:w-8"
+            className="flex items-center justify-center flex-grow-0 flex-shrink-0 h-8 w-8 md:h-10 md:w-10"
           >
-            <Logo></Logo>
+            <img src={Logo.src} alt="Logo" className="w-full h-full" />
           </Link>
           {/* <Toggle className="mr-2 h-4 ml-5 w-4" /> */}
           {loggedIn && (
@@ -113,7 +101,7 @@ const NavBar = () => {
                   <Link
                     onClick={() => setSideBar(false)}
                     key={link}
-                    href={
+                    href={"/"+
                       link.split(" ").join("-").toLowerCase() +
                       `${link.startsWith("Top") ? "?range=short_term" : ""}`
                     }
@@ -159,7 +147,7 @@ const NavBar = () => {
                       ? getInitials(user?.display_name!)
                       : ""} */}
 
-                    {!!user?.images.length ? (
+                    {!!user?.images?.length ? (
                       <img
                         className="inline-block shrink-0 rounded-2xl w-full h-full "
                         src={user?.images[0]?.url}
