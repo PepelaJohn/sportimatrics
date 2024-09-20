@@ -108,8 +108,8 @@ export function processData(
   artistsArray: Artist[],
   tracksArray: Track[],
   periodType: "days" | "months" | "years" | "custom",
-  customStartDate?: Date,
-  customEndDate?: Date
+  customStartDate?: Date | null,
+  customEndDate?: Date | null
 ) {
   const now = new Date();
   let filterStartDate: Date;

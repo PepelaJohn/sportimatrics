@@ -8,10 +8,11 @@ type userProps = {
 // let dispUser = localStorage.getItem("user");
 
 
+
 export default (
-  user: userProps = (typeof localStorage !== undefined ||
-    typeof localStorage !== "undefined") &&
-  !!localStorage.getItem("user")
+  user: userProps = (typeof window !== undefined ||
+    typeof window !== null) &&
+  !!window.localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user")!)
     : {},
   action: actionProp

@@ -6,10 +6,10 @@ import Alert from "@/components/Alert"
 const manrope = Manrope({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SpotiMetrics",
+  title: "Musimter",
   description: "Keep Track of your Spotify Listening History",
   icons: {
-    icon: "/icons/logo.svg",
+    icon: "/icons/logo.png",
   },
 };
 

@@ -10,6 +10,7 @@ import {
   LinearScale,
   Title,
 } from "chart.js";
+import useMediaQuery from "@/hooks/useMediaQuery";
 
 ChartJS.register(
   LineElement,
@@ -57,7 +58,7 @@ const MinutesPlayedLineChart: React.FC<MinutesPlayedLineChartProps> = ({
         position: "top" as const,
       },
       title: {
-        display: true,
+        display: useMediaQuery('min-windth:1060px'),
         text: "Minutes Played Per Month",
       },
       tooltip: {

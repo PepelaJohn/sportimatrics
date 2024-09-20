@@ -58,7 +58,7 @@ export function ComboboxDemo({value, setValue} :Props) {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[160px] justify-between"
+          className="w-[100px] justify-between border-gray-700"
         >
           {value
             ? frameworks.find((framework) => framework.value === value)?.label
@@ -66,7 +66,7 @@ export function ComboboxDemo({value, setValue} :Props) {
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] bg-black-1 border text-white-2 p-0">
+      <PopoverContent className="w-[200px] bg-black-1 border border-gray-700 text-white-2 p-0">
         <Command>
           {/* <CommandInput placeholder="Search framework..." /> */}
           <CommandList>

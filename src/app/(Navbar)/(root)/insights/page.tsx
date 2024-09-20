@@ -16,17 +16,18 @@ import MinutesPlayedDoughnutChart from "@/components/Doughnut";
 import DialogCloseButton from "@/components/Dialog";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { ERROR } from "@/constants";
+import { ERROR, SUCCESS } from "@/constants";
 import { ComboboxDemo } from "@/components/ComboBOx";
-import DatePicker from "react-datepicker";
+import CustomDatePicker from "../../../../components/DatePicker";
+
 
 export default function Profile() {
   const router = useRouter();
   const dispatch = useDispatch();
 
   const [customDate, setCustomDate] = useState<{
-    customStartDate?:  Date ;
-    customEndDate?:  Date ;
+    customStartDate?:  Date  ;
+    customEndDate?:  Date  ;
   } | null>(null);
 
   const [value, setValue] = useState<"months" | "days" | "years" | "custom">(
@@ -102,11 +103,18 @@ export default function Profile() {
     };
 
     if (value === "custom") {
+
+      if(customDate?.customEndDate && customDate.customStartDate){
+
+        !!Object.keys(user).length && getDataFromDB();
+      }else{
+        dispatch({type:SUCCESS, payload:"Please select the start and end dates"})
+      }
       
     } else {
       !!Object.keys(user).length && getDataFromDB();
     }
-  }, [value]);
+  }, [value, customDate?.customEndDate, customDate?.customStartDate]);
 
   useEffect(() => {
     const dt1 = data!?.artistData.slice(0, 10);
@@ -135,16 +143,26 @@ export default function Profile() {
     setData1({ labels: lbls, values: vals });
   }, [data, value]);
 
+
+const [disabled, setDisabled] = useState(true);
+  useEffect(()=>{
+    if(value!== 'custom'){
+      setDisabled(true)
+      setCustomDate(null)
+    }else{
+      setDisabled(false)
+    }
+  },[value])
   return (
     <div className="min-h-screen h-full  w-full max-w-full gap-5 flex mb-5 flex-col items-center px-2  text-gray-100">
       <div className="max-w-5xl  nav-height"></div>
-      <div className="border-gray-800 bg-gray-900  lg:max-w-[800px] flex items-center justify-between w-full px-1 lg:py-6  py-3">
+      <div className="border-gray-800 bg-gray-900  lg:max-w-[800px] flex items-center justify-between w-full lg:px-5 px-1 lg:py-6  py-3">
         <ComboboxDemo value={value} setValue={setValue} />
-        <DatePicker/>
+        <CustomDatePicker disabled={disabled} customDate={customDate} setCustomDate={setCustomDate}/>
       </div>
 
       <div className=" border border-gray-800 bg-gray-900  lg:max-w-[800px]  w-full  lg:p-10 py-3 flex flex-col overflow-hidden items-center justify-center ">
-        <div className="flex   items-center justify-start gap-5 w-full">
+        <div className="flex  px-2 items-center justify-start gap-5 w-full">
           <h1 className="font-semibold uppercase    text-xs md:text-lg ">
             Top 10 {tracksOrArtists}
           </h1>
@@ -153,10 +171,11 @@ export default function Profile() {
             heading={`Top 10 ${tracksOrArtists}`}
             text={`This chart displays the top 10 ${tracksOrArtists} ${
               value === "months"
-                ? "for the last 12 months"
+                ? "for the last 12 months."
                 : value === "days"
-                ? " for the last 30 days"
-                : "for the last 5 years"
+                ? " for the last 30 days."
+                : value === 'custom'? "for the selected period."
+                : "for the last 5 years."
             } based on your data.
             Hover or click the bar to view more details.`}
           >

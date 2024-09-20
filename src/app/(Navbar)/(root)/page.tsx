@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/redux/store/StoreProvider";
 import Link from "next/link";
 import { getuserTopItems } from "@/api";
-import { ERROR } from "@/constants";
 gsap.registerPlugin(useGSAP);
 
 const Home = () => {
@@ -17,6 +16,9 @@ const Home = () => {
   const loggedIn = !!Object.keys(user).length;
 
   const [loading, setLoading] = useState(false);
+
+
+const [refresh, setRefresh] = useState(false);
   const [topArtists, settopArtists] = useState<IArtist[] | []>([]);
 
   useEffect(() => {
@@ -36,36 +38,36 @@ const Home = () => {
       setLoading(false);
     };
     getData();
-  }, []);
+  }, [refresh]);
 
   useGSAP(() => {
-    gsap.to(".border-bottom", {
+    window.document.querySelector(".border-bottom") && gsap.to(".border-bottom", {
       delay: 1.4,
       width: "100%",
       ease: "expo.inOut",
     });
 
-    gsap.from(".subtitle", {
+    window.document.querySelector(".subtitle") && gsap.from(".subtitle", {
       delay: 2.8,
       opacity: 0,
       x: -20,
       ease: "expo.inOut",
     });
 
-    gsap.to(".title", {
+    window.document.querySelector(".title") && gsap.to(".title", {
       delay: 2.2,
       width: "100%",
       ease: "expo.inOut",
     });
 
-    gsap.from(".desc", {
+    window.document.querySelector(".desc") && gsap.from(".desc", {
       delay: 2.8,
       opacity: 0,
       x: -20,
       ease: "expo.inOut",
     });
 
-    window.document.getElementsByClassName(".readmore") &&
+    window.document.querySelector(".readmore") &&
       gsap.from(".readmore", {
         delay: 2.8,
         opacity: 0,
@@ -73,33 +75,33 @@ const Home = () => {
         ease: "expo.inOut",
       });
 
-    gsap.to(".img-item", {
+    window.document.querySelector(".img-item") && gsap.to(".img-item", {
       delay: 2.2,
       width: "100%",
       ease: "expo.inOut",
       stagger: 0.2,
     });
 
-    gsap.from(".item-4", {
+    window.document.querySelector(".item-4") && gsap.from(".item-4", {
       opacity: 0,
       x: -20,
       delay: 3,
       ease: "expo.inOut",
     });
 
-    gsap.to(".first", {
+    window.document.querySelector(".first") && gsap.to(".first", {
       delay: 0.2,
       left: "-100%",
       ease: "expo.inOut",
     });
 
-    gsap.to(".second", {
+    window.document.querySelector(".second") && gsap.to(".second", {
       delay: 0.4,
       left: "-100%",
       ease: "expo.inOut",
     });
 
-    gsap.to(".third", {
+    window.document.querySelector(".third") && gsap.to(".third", {
       delay: 0.6,
       left: "-100%",
       ease: "expo.inOut",
@@ -157,14 +159,14 @@ const Home = () => {
                       <div className="item-4 flex max-w-full overflow-hidden flex-grow-0 w-full items-end justify-end ">
                         <div className="flex items-center gap-2">
                           <p className="text-gray-400 text-xs font-extralight">
-                            <span className="text-gray-200">1. </span>
+                           {!!topArtists?.length && <span className="text-gray-200">1. </span>}
                             {!!topArtists.length && topArtists[0]?.name}
                           </p>
                         </div>
                       </div>
                       {!!topArtists?.length ? (
                         topArtists?.map((artist, i) => (
-                          <div
+                          <Link href={"/top-artists?range=long_term"}
                             key={i}
                             style={{
                               backgroundImage: `url(${artist.images[1].url})`,
@@ -172,11 +174,27 @@ const Home = () => {
                             className={`item-${
                               i + 1
                             } easeinOut hover:scale-105 border-green-300 border cursor-pointer img-item w-full min-w-full max-w-full h-full `}
-                          ></div>
+                          ></Link>
                         ))
                       ) : (
                         <div className="text-white-1 !h-full w-full items-center item-1  flex justify-center text-sm">
-                          No artist data found
+                          <button onClick={()=>setRefresh((prev)=>!prev)} type="button" className="buttonrefresh">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              fill="currentColor"
+                              className="bi bi-arrow-repeat"
+                              viewBox="0 0 16 16"
+                            >
+                              <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"></path>
+                              <path
+                                fill-rule="evenodd"
+                                d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"
+                              ></path>
+                            </svg>
+                            Refresh
+                          </button>
                         </div>
                       )}
                     </>

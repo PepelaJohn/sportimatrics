@@ -29,7 +29,7 @@ function page({
     const getAndCheckAuth = async () => {
       const isAuthenticated = await getToken();
      
-      alert("after is authenitcated form get profile")
+  
       
       if (isAuthenticated.authenticated) {
         let user = getProfile(dispatch as React.Dispatch<UnknownAction>);
@@ -54,7 +54,7 @@ function page({
             );
             const data = await promiseData.json();
            
-            alert();
+            
 
             if (data.status === 200) {
               router.replace("/");
