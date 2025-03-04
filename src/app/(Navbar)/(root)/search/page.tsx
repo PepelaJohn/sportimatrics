@@ -39,11 +39,11 @@ export default function TopSongs({
   return (
     <div className="mt-9 flex nav-height !max-w-[100vw] items-center flex-col gap-9 md:overflow-hidden">
       <section className="flex w-full mx-width flex-col gap-5">
-        <h1 className="text-lg f font-bold w-full text-center">
+        <h1 className="text-lg f font-bold w-full text-white-1 text-center">
           {"You searched for" + ' "' + searchParams.q + '"'}
         </h1>
 
-        <h1 className="font-semibold   uppercase text-lg mb-5 w-full text-center">
+        <h1 className="font-semibold text-white-2  uppercase text-lg mb-5 w-full text-center">
           Tracks
         </h1>
         <div className="flex-wrap justify-center flex gap-5 mb-10 tracks">
@@ -61,7 +61,7 @@ export default function TopSongs({
           ))}
         </div>
 
-        <h1 className="font-semibold  underline uppercase text-lg mb-5 w-full text-center">
+        <h1 className="font-semibold  underline uppercase text-lg text-white-2 mb-5 w-full text-center">
           Albums / Playlists
         </h1>
         <div className="flex-wrap justify-center flex gap-5 mb-10 albums">
@@ -78,7 +78,7 @@ export default function TopSongs({
           ))}
         </div>
 
-        <h1 className="font-semibold   uppercase text-lg mb-5 w-full text-center">
+        <h1 className="font-semibold text-white-2  uppercase text-lg mb-5 w-full text-center">
           Artists
         </h1>
         <div className="flex-wrap justify-center flex gap-5 mb-10 artists">

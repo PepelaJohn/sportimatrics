@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 export const POST = async (request: NextRequest) => {
   try {
-    connectDB();
+    await connectDB();
     const body = await request.json();
     //console.log(body);
 
@@ -26,8 +26,9 @@ export const POST = async (request: NextRequest) => {
     });
 
     return NextResponse.json({user},{ status: 200 });
-  } catch (error) {
+  } catch (error:any) {
     console.log(error);
     // throw new Error(error as string);
+    return NextResponse.json({error:error.message}, {status:500})
   }
 };

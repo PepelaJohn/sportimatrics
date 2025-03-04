@@ -102,11 +102,9 @@ export const POST = async (request: NextRequest) => {
 
 export const GET = async (request: NextRequest) => {
   try {
-    connectDB();
+    await connectDB()
     const url = new URL(request.url);
     const params = new URLSearchParams(url.search);
-
-
 
     let email = params.get("email");
     if (!email) {
@@ -130,13 +128,12 @@ export const GET = async (request: NextRequest) => {
     if (!rawData)
       return NextResponse.json({ message: "Data not found" }, { status: 404 });
 
-    
     return NextResponse.json(
       { ...rawData._doc, processed: user.uploads.processed },
       { status: 200 }
     );
   } catch (error: any) {
-    console.log("getuploads",error.message);
+    console.log("getuploads", error.message);
     return NextResponse.json(
       { message: error.message || "Internal Server Error" },
       { status: 500 }
@@ -172,28 +169,30 @@ export const PATCH = async (request: NextRequest) => {
         { status: 404, statusText: "User not found" }
       );
 
-      let processedData = await ProcessedData.findOne({userId})
-      if (!processedData) {
-        processedData = new ProcessedData()
-      }
+    let processedData = await ProcessedData.findOne({ userId });
+    if (!processedData) {
+      processedData = new ProcessedData();
+    }
 
+    processedData.userId;
+    processedData.artistData;
+    processedData.trackData;
+    processedData.activeTimes;
+    processedData.activeDays;
+    processedData.activeMonths;
 
-      processedData.userId
-      processedData.artistData
-      processedData.trackData
-      processedData.activeTimes
-      processedData.activeDays
-      processedData.activeMonths
-
-      await processedData.save()
-      user.uploads.processedData = processedData._id
-      user.uploads.processed = true
-      await user.save()
-      return NextResponse.json({message:"Success"}, {status:200})
+    await processedData.save();
+    user.uploads.processedData = processedData._id;
+    user.uploads.processed = true;
+    await user.save();
+    return NextResponse.json({ message: "Success" }, { status: 200 });
   } catch (error: any) {
-    console.log("patch upload",error.message);
-    return NextResponse.json({
-      message: error.message || "Internal server error",
-    });
+    console.log("patch upload", error.message);
+    return NextResponse.json(
+      {
+        message: error.message || "Internal server error",
+      },
+      { status: 500 }
+    );
   }
 };

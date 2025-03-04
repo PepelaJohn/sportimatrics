@@ -26,11 +26,9 @@ const NavBar = () => {
   const popupRef = useRef<any>(null);
   const [loggedIn, setLoggedIn] = useState<boolean>(false);
   const dispatch = useDispatch();
- 
+
   const popup = useSelector((state: any) => state.info);
   const user = useSelector((state: any) => state.user);
- 
-  
 
   useEffect(() => {
     if (popup.show) {
@@ -101,9 +99,12 @@ const NavBar = () => {
                   <Link
                     onClick={() => setSideBar(false)}
                     key={link}
-                    href={"/"+
-                      link.split(" ").join("-").toLowerCase() +
-                      `${link.startsWith("Top") ? "?range=short_term" : ""}`
+                    href={
+                      link.toLowerCase() === "insights"
+                        ? "insights?t=artists"
+                        : "/" +
+                          link.split(" ").join("-").toLowerCase() +
+                          `${link.startsWith("Top") ? "?range=short_term" : ""}`
                     }
                   >
                     {link}

@@ -22,15 +22,15 @@ import {
 const frameworks = [
   {
     value: "months",
-    label: "Monthly",
+    label: "Months",
   },
   {
     value: "days",
-    label: "Daily",
+    label: "Days",
   },
   {
     value: "years",
-    label: "Yearly",
+    label: "Years",
   },
   {
     value: "custom",

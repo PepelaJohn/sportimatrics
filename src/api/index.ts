@@ -48,7 +48,7 @@ export async function pkce_challenge_from_verifier(v: string) {
 
 // the response has a code that can be exchanged for the access token
 export const getToken = async () => {
-  const codeVerifier =  window.localStorage.getItem("code_verifier");
+  const codeVerifier = window.localStorage.getItem("code_verifier");
   if (!codeVerifier) return { authenticated: false };
   const urlParams = new URLSearchParams(window.location.search);
   let code = urlParams.get("code")!;
@@ -68,7 +68,6 @@ export const getToken = async () => {
 
   const body = await fetch(apiUrl, payload);
   const response = await body.json();
-
 
   if (!!response.access_token) {
     cookie.set("_gtPaotwcsA", response.access_token, { expires: 3600 });
@@ -213,20 +212,21 @@ export const Logout = async (
         payload
       );
       const data = await promiseData.json();
+      console.log(promiseData.status)
+      console.log(data)
 
-      if (data.status === 200) {
+      if (promiseData.status === 200) {
         // localStorage.clear();
-
-        
+        dispatch({ type: SIGN_OUT });
+        cookie.remove("_gtPaotwcsA");
+        dispatch({ type: SUCCESS, payload: "Logged Out" });
+        if (typeof window !== "undefined" && typeof window !== undefined) {
+          window.location.href = "http://localhost:3000";
+        }
       }
     }
 
-    dispatch({ type: SIGN_OUT });
-    cookie.remove("_gtPaotwcsA");
-    dispatch({ type: SUCCESS, payload: "Logged Out" });
-    if (typeof window !== "undefined" && typeof window !== undefined) {
-      window.location.href = "http://localhost:3000";
-    }
+    
     return;
   } catch (error: any) {
     dispatch({ type: ERROR, payload: "Failed to logout" });
@@ -262,8 +262,6 @@ export const searchSpotify = async (
   setsearchData: React.Dispatch<React.SetStateAction<{ [key: string]: any }>>,
   dispatch: React.Dispatch<UnknownAction>
 ) => {
- 
-
   const q = query.split(" ").join("+");
   try {
     let accessToken = getCookie("_gtPaotwcsA");
@@ -279,7 +277,7 @@ export const searchSpotify = async (
     );
 
     const data = await response.data;
-  
+
     setsearchData(data);
     return data;
   } catch (error: any) {
@@ -343,7 +341,8 @@ export const uploadToDB = async (formData: { [key: string]: any }) => {
       payload
     );
     const data = await promiseData.json();
-    
+
+    console.log(data)
   } catch (error: any) {
     //console.table(error);
   }

@@ -52,11 +52,11 @@ function page({
               "http://localhost:3000/api/auth",
               payload
             );
-            const data = await promiseData.json();
+            // const data = await promiseData?.json();
            
             
 
-            if (data.status === 200) {
+            if (promiseData.status === 200) {
               router.replace("/");
               dispatch({ type: SIGN_IN, payload: result });
             } else {

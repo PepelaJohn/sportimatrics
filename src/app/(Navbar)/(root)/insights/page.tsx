@@ -8,6 +8,7 @@ import {
 } from "@/lib/utilsqueue";
 
 import { useEffect, useState } from "react";
+export type numRange = 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20;
 
 import BarChart from "@/components/BarChart";
 import { getFormDB } from "@/api";
@@ -19,15 +20,25 @@ import { useDispatch, useSelector } from "react-redux";
 import { ERROR, SUCCESS } from "@/constants";
 import { ComboboxDemo } from "@/components/ComboBOx";
 import CustomDatePicker from "../../../../components/DatePicker";
+import { ComboboxDemo as Combobox } from "@/components/ComboBox2";
 
-
-export default function Profile() {
+export default function Profile({ searchParams }: { searchParams: string }) {
   const router = useRouter();
   const dispatch = useDispatch();
+  console.log(Object(searchParams).t);
+
+  if (
+    Object(searchParams)?.t !== "artists" &&
+    Object(searchParams)?.t !== "tracks"
+  ) {
+    router.replace("/insights?t=artists");
+  }
+
+ 
 
   const [customDate, setCustomDate] = useState<{
-    customStartDate?:  Date  ;
-    customEndDate?:  Date  ;
+    customStartDate?: Date;
+    customEndDate?: Date;
   } | null>(null);
 
   const [value, setValue] = useState<"months" | "days" | "years" | "custom">(
@@ -36,8 +47,12 @@ export default function Profile() {
   const user = useSelector((state: any) => state.user);
 
   const [tracksOrArtists, setTracksOrArtists] = useState<"tracks" | "artists">(
-    "tracks"
+    Object(searchParams).t
   );
+
+  useEffect(()=>{
+    router.push(`/insights?t=${tracksOrArtists}`)
+  },[tracksOrArtists])
 
   const arr: ["artists", "tracks"] = ["artists", "tracks"];
   const [data1, setData1] = useState<{
@@ -96,6 +111,7 @@ export default function Profile() {
         customDate!?.customEndDate
       );
       const dtx = processListeningData(tracksArray, podcastArray, "years");
+      console.log(dtx);
 
       // localStorage.setItem("processed", processed.toString());
       setData(dt);
@@ -103,22 +119,25 @@ export default function Profile() {
     };
 
     if (value === "custom") {
-
-      if(customDate?.customEndDate && customDate.customStartDate){
-
+      if (customDate?.customEndDate && customDate.customStartDate) {
         !!Object.keys(user).length && getDataFromDB();
-      }else{
-        dispatch({type:SUCCESS, payload:"Please select the start and end dates"})
+      } else {
+        dispatch({
+          type: SUCCESS,
+          payload: "Please select the start and end dates",
+        });
       }
-      
     } else {
       !!Object.keys(user).length && getDataFromDB();
     }
   }, [value, customDate?.customEndDate, customDate?.customStartDate]);
+  
+
+const [num, setNum] = useState<numRange>(10);
 
   useEffect(() => {
-    const dt1 = data!?.artistData.slice(0, 10);
-    const dt2 = data!?.trackData.slice(0, 10);
+    const dt1 = data!?.artistData.slice(0, num);
+    const dt2 = data!?.trackData.slice(0, num);
     const lbls: string[] = [];
     const vals: number[] = [];
     const lbls2: string[] = [];
@@ -141,30 +160,36 @@ export default function Profile() {
     });
     setData2({ labels: lbls2, values: vals2 });
     setData1({ labels: lbls, values: vals });
-  }, [data, value]);
+  }, [data, value, num]);
 
-
-const [disabled, setDisabled] = useState(true);
-  useEffect(()=>{
-    if(value!== 'custom'){
-      setDisabled(true)
-      setCustomDate(null)
-    }else{
-      setDisabled(false)
+  const [disabled, setDisabled] = useState(true);
+  useEffect(() => {
+    if (value !== "custom") {
+      setDisabled(true);
+      setCustomDate(null);
+    } else {
+      setDisabled(false);
     }
-  },[value])
+  }, [value]);
   return (
     <div className="min-h-screen h-full  w-full max-w-full gap-5 flex mb-5 flex-col items-center px-2  text-gray-100">
       <div className="max-w-5xl  nav-height"></div>
       <div className="border-gray-800 bg-gray-900  lg:max-w-[800px] flex items-center justify-between w-full lg:px-5 px-1 lg:py-6  py-3">
-        <ComboboxDemo value={value} setValue={setValue} />
-        <CustomDatePicker disabled={disabled} customDate={customDate} setCustomDate={setCustomDate}/>
+        <div className="gap-2 flex">
+          <ComboboxDemo value={value} setValue={setValue} />
+          <Combobox num={num} setNum={setNum} />
+        </div>
+        <CustomDatePicker
+          disabled={disabled}
+          customDate={customDate}
+          setCustomDate={setCustomDate}
+        />
       </div>
 
       <div className=" border border-gray-800 bg-gray-900  lg:max-w-[800px]  w-full  lg:p-10 py-3 flex flex-col overflow-hidden items-center justify-center ">
         <div className="flex  px-2 items-center justify-start gap-5 w-full">
           <h1 className="font-semibold uppercase    text-xs md:text-lg ">
-            Top 10 {tracksOrArtists}
+            Top {num} {tracksOrArtists}
           </h1>
 
           <DialogCloseButton
@@ -174,7 +199,8 @@ const [disabled, setDisabled] = useState(true);
                 ? "for the last 12 months."
                 : value === "days"
                 ? " for the last 30 days."
-                : value === 'custom'? "for the selected period."
+                : value === "custom"
+                ? "for the selected period."
                 : "for the last 5 years."
             } based on your data.
             Hover or click the bar to view more details.`}
@@ -201,7 +227,7 @@ const [disabled, setDisabled] = useState(true);
         </div>
         {tracksOrArtists === "artists" ? (
           <>
-            {data1 === null ? (
+            {data === null ? (
               <Loader className="animate-spin text-green-400" size={30} />
             ) : (
               <BarChart data={data1} trackOrArtist={tracksOrArtists} />
@@ -258,7 +284,7 @@ const [disabled, setDisabled] = useState(true);
         <div className=" border border-gray-800 bg-gray-900  lg:max-w-[800px]  w-full h-fit  lg:p-10 py-3 flex flex-col items-center justify-center ">
           <div className="flex   items-center gap-5">
             <h1 className="font-semibold uppercase    text-xs md:text-lg ">
-              TOTAL MONTHLY ACTIVITY
+              MONTHLY ACTIVITY
             </h1>
 
             <DialogCloseButton

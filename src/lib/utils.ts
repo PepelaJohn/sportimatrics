@@ -63,7 +63,7 @@ export function formatNumberWithCommas(number: number | string): string {
   return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-export const animateHomepage = () => {};
+
 
 import streamdata from "@/assets/StreamingHistory_music_1.json";
 import { ERROR } from "@/constants";

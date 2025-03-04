@@ -5,9 +5,8 @@ import { cookies } from "next/headers";
 
 export const POST = async (request: NextRequest) => {
   try {
-    connectDB();
+    await connectDB();
     const req = await request.json();
-   
 
     let user = await User.findOne({ email: req.email });
 
@@ -18,10 +17,14 @@ export const POST = async (request: NextRequest) => {
     await user.save();
 
     // cookies()
-    return NextResponse.json({
-      status: 200,
-    });
+    return NextResponse.json(
+      {},
+      {
+        status: 200,
+      }
+    );
   } catch (error: any) {
     console.log(error);
+    return NextResponse.json({error:error.message}, { status: 500 });
   }
 };
