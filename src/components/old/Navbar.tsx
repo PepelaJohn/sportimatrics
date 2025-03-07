@@ -7,7 +7,6 @@ import { MdSearch } from "react-icons/md";
 import { IoMdLogOut } from "react-icons/io";
 import { usePathname } from "next/navigation";
 import { getCookie, getInitials } from "@/lib/utils";
-import { getProfile, searchSpotify } from "@/api";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { CLOSE_DISPLAY } from "@/constants";

@@ -3,19 +3,46 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
 import {
-  RefreshCcw,
+  
   Heart,
-  Music,
+  
   CreditCard,
   DollarSign,
   Gift,
+  Loader,
 } from "lucide-react";
+import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { ERROR } from "@/constants";
 
 export default function Donations() {
   const [selectedAmount, setSelectedAmount] = useState<Number | null>(5);
-  const [customAmount, setCustomAmount] = useState("");
+  const [customAmount, setCustomAmount] = useState<Number | null>(null);
   const [supporterCount, setSupporterCount] = useState(0);
+  const user = useSelector((state: any) => state.user);
+  // const [amount, setAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch()
 
+  const handleDonate = async () => {
+    console.log(user)
+    let amount = customAmount || selectedAmount
+
+    if (!amount || !user.email) return
+    setLoading(true);
+    try {
+      const { data } = await axios.post("/api/donations?action=create-payment", {
+        userId: user.email,
+        amount,
+      });
+      window.location.href = data.link; // Redirect to PayPal payment page
+    } catch (error:any) {
+       dispatch({ type: ERROR, payload: "Error creating PayPal Payment" });
+      
+      // alert("Failed to start payment.");
+    }
+    setLoading(false);
+  };
   // Simulate fetch donation count on mount
   useEffect(() => {
     // This would be replaced with an actual API call
@@ -26,7 +53,7 @@ export default function Donations() {
     return () => clearTimeout(timer);
   }, []);
 
-  const donationAmounts = [5, 10, 25, 50];
+  const donationAmounts = [1,2,5, 10, 25,];
 
   const handleCustomAmountChange = (e: any) => {
     const value = e.target.value.replace(/[^0-9]/g, "");
@@ -38,16 +65,10 @@ export default function Donations() {
 
   const handleAmountSelect = (amount: Number) => {
     setSelectedAmount(amount);
-    setCustomAmount("");
+    setCustomAmount(null);
   };
 
-  const handleDonate = () => {
-    const amount = selectedAmount || (customAmount ? Number(customAmount) : 5);
-    alert(
-      `Thank you for your donation of $${amount}! Redirecting to payment...`
-    );
-    // This would be replaced with actual payment processing
-  };
+ 
 
   return (
     <div className="min-h-screen nav-height  w-full bg-[#121626] flex flex-col items-center text-gray-100">
@@ -118,7 +139,7 @@ export default function Donations() {
                       </div>
                       <input
                         type="text"
-                        value={customAmount}
+                        value={customAmount as any}
                         onChange={handleCustomAmountChange}
                         placeholder="Enter custom amount"
                         className="bg-[#1E2338] border border-gray-700 rounded-lg py-3 pl-10 pr-4 block w-full focus:border-[#20E3B2] focus:outline-none text-white placeholder-gray-400"
@@ -169,11 +190,14 @@ export default function Donations() {
                 {/* Donation button */}
                 <div className="flex flex-col gap-4">
                   <button
+                  disabled={loading}
                     onClick={handleDonate}
-                    className="w-full bg-[#20E3B2] hover:bg-[#1bc396] text-[#121626] rounded-lg py-4 px-6 font-bold flex items-center justify-center transition-colors duration-200"
+                    className="w-full bg-[#20E3B2] disabled:bg-gray-700 hover:bg-[#1bc396] text-[#121626] rounded-lg py-4 px-6 font-bold flex items-center justify-center transition-colors duration-200"
                   >
-                    <Heart className="mr-2" size={20} />
-                    Support MusiMeter
+                  {
+                    loading ? <Loader rotate={2} className="text-green-500 "></Loader> : <>  <Heart className="mr-2" size={20} />
+                    Support MusiMeter</>
+                  }
                   </button>
                   <a
                     href="https://buymeacoffee.com/musimeter"

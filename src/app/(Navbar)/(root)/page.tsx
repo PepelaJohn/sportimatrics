@@ -180,7 +180,7 @@ const Home = () => {
             {!loggedIn && (
               <motion.div
                 variants={buttonVariants}
-                whileHover="hover"
+              
                 whileTap="tap"
               >
                 <Link

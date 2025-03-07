@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
 import StoreProvider from "@/redux/store/StoreProvider";
-
+import Script from "next/script";
 const manrope = Manrope({ subsets: ["latin"] });
 
 const metadataBase =
@@ -56,7 +56,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head />
+      <head >
+
+        {/* Google Analytics Script */}
+        <Script
+          strategy="afterInteractive"
+          src={`https://www.googletagmanager.com/gtag/js?id=G-F1FXGGN4KE`}
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-XXXXXXXXXX');
+          `}
+        </Script>
+      </head>
       <body className={manrope.className}>
         <StoreProvider>{children}</StoreProvider>
       </body>
