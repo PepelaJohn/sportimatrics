@@ -1,32 +1,25 @@
 "use client";
 import { SIGN_IN, SIGN_OUT } from "@/constants";
 import cookie from "js-cookie";
-type userProps = {
-  [key: string | number | symbol]: any;
+
+type ActionProps = {
+  type: string;
+  payload?: any;
 };
 
-// let dispUser = localStorage.getItem("user");
+type UserProps = Record<string | number | symbol, any>;
 
+export default (user: UserProps = {}, action: ActionProps) => {
+  if (typeof window !== "undefined") {
+    const storedUser = localStorage.getItem("user");
+    user = storedUser ? JSON.parse(storedUser) : {};
+  }
 
-
-export default (
-  user: userProps = (typeof window !== undefined ||
-    typeof window !== null) &&
-  !!window.localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user")!)
-    : {},
-  action: actionProp
-) => {
-  
   switch (action.type) {
-   
     case SIGN_IN:
-    
-     
-      if (typeof window !== "undefined" && typeof window !== undefined) {
-        window.localStorage.setItem("user", JSON.stringify(action.payload));
-      }  
-
+      if (typeof window !== "undefined") {
+        localStorage.setItem("user", JSON.stringify(action.payload));
+      }
       return action.payload;
 
     case SIGN_OUT:
@@ -39,11 +32,12 @@ export default (
         path: "/refresh",
       });
 
-      if (typeof window !== "undefined" && typeof window !== undefined) {
-        window.localStorage.removeItem("user");
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("user");
       }
 
       return {};
+
     default:
       return user;
   }

@@ -33,13 +33,14 @@ interface BarChartProps {
 const BarChart: FC<BarChartProps> = ({ data, trackOrArtist }) => {
   const isAbove = useMediaQuery("(min-width: 1060px)");
   const router = useRouter(); // Initialize useRouter
-  
+  // console.log(data, trackOrArtist)
+  // alert()
   const chartData = {
-    labels: data!.labels,
+    labels: data?.labels || [],
     datasets: [
       {
         label: "Total Minutes Played",
-        data: data!.values,
+        data: data?.values || [],
         backgroundColor: "rgba(39, 83, 52, 0.6)", // Adjust for dark mode
         borderColor: "#0f2711f0",
         borderWidth: 1,

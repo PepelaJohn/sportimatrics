@@ -1,308 +1,371 @@
 "use client";
-import { Info, Loader } from "lucide-react";
-import {
-  ArtistData,
-  processData,
-  processListeningData,
-  TrackData,
-} from "@/lib/utilsqueue";
 
-import { useEffect, useState } from "react";
-export type numRange = 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20;
-
-import BarChart from "@/components/BarChart";
-import { getFormDB } from "@/api";
-import MinutesPlayedLineChart from "@/components/LIneChart";
-import MinutesPlayedDoughnutChart from "@/components/Doughnut";
-import DialogCloseButton from "@/components/Dialog";
+import { useEffect, useState, useMemo } from "react";
+import { Info, Loader, Calendar, BarChart as BarChartIcon, Music, Disc, Clock, Filter } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { ERROR, SUCCESS } from "@/constants";
+
+// Components
+import BarChart from "@/components/BarChart";
+import MinutesPlayedLineChart from "@/components/LIneChart";
+import MinutesPlayedDoughnutChart from "@/components/Doughnut";
+import DialogCloseButton from "@/components/Dialog";
 import { ComboboxDemo } from "@/components/ComboBOx";
-import CustomDatePicker from "../../../../components/DatePicker";
+import CustomDatePicker from "@/components/DatePicker";
 import { ComboboxDemo as Combobox } from "@/components/ComboBox2";
 
-export default function Profile({ searchParams }: { searchParams: string }) {
+// Utilities and API
+import { 
+  ArtistData, 
+  TrackData, 
+  processData, 
+  processListeningData
+} from "@/lib/utilsqueue";
+import { getFormDB } from "@/api";
+
+// Types
+export type TimeRange = "months" | "days" | "years" | "custom";
+export type ContentType = "artists" | "tracks";
+export type NumRange = 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20;
+
+interface ChartData {
+  labels: string[];
+  values: number[];
+}
+
+interface ActiveTime {
+  hour: number;
+  minutesPlayed: number;
+}
+
+interface ActiveDay {
+  day: string;
+  minutesPlayed: number;
+}
+
+interface ActiveMonth {
+  month: string;
+  minutesPlayed: number;
+}
+
+interface ProcessedData {
+  artistData: ArtistData[];
+  trackData: TrackData[];
+  activeTimes: ActiveTime[];
+  activeDays: ActiveDay[];
+  activeMonths: ActiveMonth[];
+}
+
+interface CustomDateRange {
+  customStartDate?: Date;
+  customEndDate?: Date;
+}
+
+// Card component for charts
+interface InsightCardProps {
+  title: string;
+  infoTitle: string;
+  infoText: string;
+  children: React.ReactNode;
+  className?: string;
+  icon?: React.ReactNode;
+}
+
+const InsightCard: React.FC<InsightCardProps> = ({ 
+  title, 
+  infoTitle,
+  infoText,
+  children,
+  className = "",
+  icon = <Info size={16} />
+}) => (
+  <div className={`bg-gray-900 border border-gray-800 rounded-xl overflow-hidden transition-all hover:shadow-lg hover:shadow-green-400/5 w-full ${className}`}>
+    <div className="p-4 md:p-6 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {icon}
+          <h2 className="font-semibold text-sm md:text-lg uppercase text-white">{title}</h2>
+          <DialogCloseButton heading={infoTitle} text={infoText}>
+            <span className="text-green-400/80 hover:text-green-400 transition-colors cursor-pointer">
+              <Info size={16} />
+            </span>
+          </DialogCloseButton>
+        </div>
+      </div>
+      
+      <div className="w-full">
+        {children}
+      </div>
+    </div>
+  </div>
+);
+
+// Loading skeleton component
+const ChartSkeleton = () => (
+  <div className="animate-pulse w-full h-[300px] flex flex-col items-center justify-center">
+    <div className="w-12 h-12 rounded-full bg-gray-800 mb-4 flex items-center justify-center">
+      <Loader className="animate-spin text-green-400/30" size={24} />
+    </div>
+    <div className="h-2 bg-gray-800 rounded w-1/2 mb-2"></div>
+    <div className="h-2 bg-gray-800 rounded w-1/3"></div>
+  </div>
+);
+
+// Main component
+export default function Insights({ searchParams }: { searchParams: any }) {
   const router = useRouter();
   const dispatch = useDispatch();
-  console.log(Object(searchParams).t);
-
-  if (
-    Object(searchParams)?.t !== "artists" &&
-    Object(searchParams)?.t !== "tracks"
-  ) {
-    router.replace("/insights?t=artists");
-  }
-
- 
-
-  const [customDate, setCustomDate] = useState<{
-    customStartDate?: Date;
-    customEndDate?: Date;
-  } | null>(null);
-
-  const [value, setValue] = useState<"months" | "days" | "years" | "custom">(
-    "months"
-  );
   const user = useSelector((state: any) => state.user);
-
-  const [tracksOrArtists, setTracksOrArtists] = useState<"tracks" | "artists">(
-    Object(searchParams).t
+  
+  // State
+  const [contentType, setContentType] = useState<ContentType>(
+    searchParams?.t === "tracks" ? "tracks" : "artists"
   );
+  const [timeRange, setTimeRange] = useState<TimeRange>("months");
+  const [numItems, setNumItems] = useState<NumRange>(10);
+  const [customDate, setCustomDate] = useState<CustomDateRange | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [processedData, setProcessedData] = useState<ProcessedData | null>(null);
+  const [artistsChart, setArtistsChart] = useState<ChartData | null>(null);
+  const [tracksChart, setTracksChart] = useState<ChartData | null>(null);
 
-  useEffect(()=>{
-    router.push(`/insights?t=${tracksOrArtists}`)
-  },[tracksOrArtists])
-
-  const arr: ["artists", "tracks"] = ["artists", "tracks"];
-  const [data1, setData1] = useState<{
-    labels: string[];
-    values: number[];
-  } | null>(null);
-
-  const [data2, setData2] = useState<{
-    labels: string[];
-    values: number[];
-  } | null>(null);
-
-  interface ActiveMonth {
-    month: string;
-    minutesPlayed: number;
-  }
-
-  interface ActiveDay {
-    day: string;
-    minutesPlayed: number;
-  }
-
-  interface ActiveTime {
-    hour: number;
-    minutesPlayed: number;
-  }
-
-  const [data, setData] = useState<{
-    artistData: ArtistData[];
-    trackData: TrackData[];
-
-    activeTimes: ActiveTime[];
-    activeDays: ActiveDay[];
-    activeMonths: ActiveMonth[];
-  } | null>(null);
+  // Validate URL parameters
   useEffect(() => {
-    console.log(value, "insights");
+    if (contentType !== searchParams?.t) {
+      router.push(`/insights?t=${contentType}`);
+    }
+  }, [contentType, searchParams?.t, router]);
+
+  // Check authentication
+  useEffect(() => {
     if (!Object.keys(user).length) {
-      dispatch({ type: ERROR, payload: "Please Login first" });
+      dispatch({ type: ERROR, payload: "Please login first" });
       router.replace("/auth");
     }
-    const getDataFromDB = async () => {
-      const dataz = await getFormDB();
-      const {
-        marquee: artistsArray,
-        music_history: tracksArray,
-        podcast_history: podcastArray,
-        processed,
-      } = dataz;
+  }, [user, dispatch, router]);
 
-      const dt = processData(
-        artistsArray,
-        tracksArray,
-        value,
-        customDate!?.customStartDate,
-        customDate!?.customEndDate
-      );
-      const dtx = processListeningData(tracksArray, podcastArray, "years");
-      console.log(dtx);
-
-      // localStorage.setItem("processed", processed.toString());
-      setData(dt);
-      console.log(dt);
-    };
-
-    if (value === "custom") {
-      if (customDate?.customEndDate && customDate.customStartDate) {
-        !!Object.keys(user).length && getDataFromDB();
-      } else {
-        dispatch({
-          type: SUCCESS,
-          payload: "Please select the start and end dates",
-        });
-      }
-    } else {
-      !!Object.keys(user).length && getDataFromDB();
-    }
-  }, [value, customDate?.customEndDate, customDate?.customStartDate]);
-  
-
-const [num, setNum] = useState<numRange>(10);
-
+  // Handle custom date range
   useEffect(() => {
-    const dt1 = data!?.artistData.slice(0, num);
-    const dt2 = data!?.trackData.slice(0, num);
-    const lbls: string[] = [];
-    const vals: number[] = [];
-    const lbls2: string[] = [];
-    const vals2: number[] = [];
-
-    !!dt1?.length &&
-      typeof window !== undefined &&
-      window.sessionStorage.setItem("artistData", JSON.stringify(dt1));
-    !!dt1?.length &&
-      typeof window !== undefined &&
-      window.sessionStorage.setItem("trackData", JSON.stringify(dt2));
-
-    dt1?.map((a, i) => {
-      lbls[i] = a.artistName;
-      vals[i] = Math.floor(a.minutesPlayed);
-    });
-    dt2?.map((a, i) => {
-      lbls2[i] = a.trackName;
-      vals2[i] = Math.floor(a.minutesPlayed);
-    });
-    setData2({ labels: lbls2, values: vals2 });
-    setData1({ labels: lbls, values: vals });
-  }, [data, value, num]);
-
-  const [disabled, setDisabled] = useState(true);
-  useEffect(() => {
-    if (value !== "custom") {
-      setDisabled(true);
+    if (timeRange !== "custom") {
       setCustomDate(null);
-    } else {
-      setDisabled(false);
+    } else if (!customDate?.customStartDate || !customDate?.customEndDate) {
+      dispatch({
+        type: SUCCESS,
+        payload: "Please select both start and end dates"
+      });
     }
-  }, [value]);
+  }, [timeRange, customDate, dispatch]);
+
+  // Fetch data
+  useEffect(() => {
+    async function fetchData() {
+      if (!Object.keys(user).length) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // Check if custom date range is complete
+        if (timeRange === "custom" && (!customDate?.customStartDate || !customDate?.customEndDate)) {
+          return;
+        }
+        
+        const response = await getFormDB();
+        const {
+          marquee: artistsArray,
+          music_history: tracksArray,
+          podcast_history: podcastArray
+        } = response;
+        
+        const processedResult = processData(
+          artistsArray,
+          tracksArray,
+          timeRange,
+          customDate?.customStartDate,
+          customDate?.customEndDate
+        );
+        
+        // Also process listening data
+        processListeningData(tracksArray, podcastArray, "years");
+        
+        setProcessedData(processedResult);
+      } catch (error) {
+        console.error("Error fetching insights data:", error);
+        dispatch({ type: ERROR, payload: "Failed to load insights" });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchData();
+  }, [timeRange, customDate, user, dispatch]);
+
+  // Process chart data when processed data changes
+  useEffect(() => {
+    if (!processedData) return;
+
+    function prepareChartData(items: ArtistData[] | TrackData[], num: NumRange): ChartData {
+      const slicedItems = items.slice(0, num);
+      const labels: string[] = [];
+      const values: number[] = [];
+      
+      slicedItems.forEach((item: any, i) => {
+        labels[i] = item.artistName || item.trackName;
+        values[i] = Math.floor(item.minutesPlayed);
+      });
+      
+      return { labels, values };
+    }
+    
+    // Save to session storage
+    if (typeof window !== "undefined") {
+      const artistData = processedData.artistData.slice(0, numItems);
+      const trackData = processedData.trackData.slice(0, numItems);
+      
+      window.sessionStorage.setItem("artistData", JSON.stringify(artistData));
+      window.sessionStorage.setItem("trackData", JSON.stringify(trackData));
+    }
+    
+    // Update chart data
+    setArtistsChart(prepareChartData(processedData.artistData, numItems));
+    setTracksChart(prepareChartData(processedData.trackData, numItems));
+  }, [processedData, numItems]);
+
+  // Generate info text for time periods
+  const timeRangeInfo = useMemo(() => {
+    switch (timeRange) {
+      case "months": return "for the last 12 months";
+      case "days": return "for the last 30 days";
+      case "years": return "for the last 5 years";
+      case "custom": return "for the selected period";
+    }
+  }, [timeRange]);
+
   return (
-    <div className="min-h-screen h-full  w-full max-w-full gap-5 flex mb-5 flex-col items-center px-2  text-gray-100">
-      <div className="max-w-5xl  nav-height"></div>
-      <div className="border-gray-800 bg-gray-900  lg:max-w-[800px] flex items-center justify-between w-full lg:px-5 px-1 lg:py-6  py-3">
-        <div className="gap-2 flex">
-          <ComboboxDemo value={value} setValue={setValue} />
-          <Combobox num={num} setNum={setNum} />
-        </div>
-        <CustomDatePicker
-          disabled={disabled}
-          customDate={customDate}
-          setCustomDate={setCustomDate}
-        />
-      </div>
-
-      <div className=" border border-gray-800 bg-gray-900  lg:max-w-[800px]  w-full  lg:p-10 py-3 flex flex-col overflow-hidden items-center justify-center ">
-        <div className="flex  px-2 items-center justify-start gap-5 w-full">
-          <h1 className="font-semibold uppercase    text-xs md:text-lg ">
-            Top {num} {tracksOrArtists}
-          </h1>
-
-          <DialogCloseButton
-            heading={`Top 10 ${tracksOrArtists}`}
-            text={`This chart displays the top 10 ${tracksOrArtists} ${
-              value === "months"
-                ? "for the last 12 months."
-                : value === "days"
-                ? " for the last 30 days."
-                : value === "custom"
-                ? "for the selected period."
-                : "for the last 5 years."
-            } based on your data.
-            Hover or click the bar to view more details.`}
-          >
-            <span className="text-green-400 cursor-pointer">
-              <Info className="w-4"></Info>
-            </span>
-          </DialogCloseButton>
-          <div className="flex items-center gap-3 justify-end flex-1  ">
-            {arr.map((dt, i) => (
-              <span
-                onClick={() => setTracksOrArtists(dt)}
-                key={i}
-                className={`h-6 uppercase cursor-pointer  flex text-[10px] ${
-                  tracksOrArtists === dt
-                    ? "bg-green-400"
-                    : "bg-gray-800 border border-gray-700"
-                } items-center px-3 rounded-full`}
-              >
-                {dt}
-              </span>
-            ))}
+    <div className="flex flex-col nav-height w-full h-full">
+      <div className="bg-gray-950 py-6 text-white-2  px-4 md:px-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <header className="mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Your Listening Insights</h1>
+          <p className="text-gray-400 text-sm md:text-base">
+            Explore your music listening habits {timeRangeInfo}
+          </p>
+        </header>
+        
+        {/* Filters section */}
+        <section className="mb-8 p-4 md:p-6 bg-gray-900/60 backdrop-blur-md border border-gray-800 rounded-xl">
+          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+            <div className="flex flex-wrap gap-3 items-center">
+              <div className="flex items-center gap-2">
+                <Clock size={16} className="text-green-400" />
+                <span className="text-sm text-gray-300">Time Period:</span>
+              </div>
+              <ComboboxDemo value={timeRange} setValue={setTimeRange} />
+              
+              <div className="flex items-center gap-2 ml-2">
+                <Filter size={16} className="text-green-400" />
+                <span className="text-sm text-gray-300">Show:</span>
+              </div>
+              <Combobox num={numItems} setNum={setNumItems} />
+            </div>
+            
+            <div className={`transition-all ${timeRange === "custom" ? "opacity-100" : "opacity-50 pointer-events-none"}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar size={16} className="text-green-400" />
+                <span className="text-sm text-gray-300">Custom Range:</span>
+              </div>
+              <CustomDatePicker 
+                disabled={timeRange !== "custom"}
+                customDate={customDate}
+                setCustomDate={setCustomDate}
+              />
+            </div>
           </div>
-        </div>
-        {tracksOrArtists === "artists" ? (
-          <>
-            {data === null ? (
-              <Loader className="animate-spin text-green-400" size={30} />
-            ) : (
-              <BarChart data={data1} trackOrArtist={tracksOrArtists} />
-            )}
-          </>
-        ) : (
-          <>
-            {data2 === null ? (
-              <Loader className="animate-spin text-green-400" size={30} />
-            ) : (
-              <BarChart data={data2} trackOrArtist={tracksOrArtists} />
-            )}
-          </>
-        )}
-        {/* {data1 === null || data2 === null ? (
-          <Loader className="animate-spin text-green-400" size={30} />
-        ) : (
-          <BarChart
-            data={tracksOrArtists === "artists" ? data1 : data2}
-            trackOrArtist={tracksOrArtists}
-          />
-        )} */}
-      </div>
-
-      <div className=" border border-gray-800 bg-gray-900  lg:max-w-[800px]  w-full   lg:p-10 py-3  flex flex-col items-center justify-center ">
-        <div className="flex   items-center gap-5">
-          <h1 className="font-semibold uppercase    text-xs md:text-lg ">
-            Hourly Activity
-          </h1>
-
-          <DialogCloseButton
-            heading="Active hours rankings"
-            text={`These represent the active hours ${
-              value === "months"
-                ? "for the last 12 months"
-                : value === "days"
-                ? " for the last 30 days"
-                : "for the last 5 years"
-            } based on your data.
-            Hover or click the bar to view more details.`}
-          >
-            <span className="text-green-400 cursor-pointer">
-              <Info className="w-4"></Info>
-            </span>
-          </DialogCloseButton>
-        </div>
-        {data === null ? (
-          <Loader className="animate-spin text-green-400" size={30} />
-        ) : (
-          <MinutesPlayedLineChart data={data?.activeTimes} />
-        )}
-      </div>
-      {value !== "days" && (
-        <div className=" border border-gray-800 bg-gray-900  lg:max-w-[800px]  w-full h-fit  lg:p-10 py-3 flex flex-col items-center justify-center ">
-          <div className="flex   items-center gap-5">
-            <h1 className="font-semibold uppercase    text-xs md:text-lg ">
-              MONTHLY ACTIVITY
-            </h1>
-
-            <DialogCloseButton
-              heading="Activity by periods"
-              text="This chart shows user activity by month/yeas/days.Click or hover on the datapoint to view what it represents. "
+        </section>
+        
+        {/* Content type toggle */}
+        <div className="flex justify-center mb-8">
+          <div className="flex gap-2 p-1 bg-gray-900 rounded-full border border-gray-800">
+            <button
+              onClick={() => setContentType("artists")}
+              className={`
+                px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2
+                ${contentType === "artists" 
+                  ? "bg-green-400 text-gray-900 shadow-md" 
+                  : "text-gray-300 hover:text-white"}
+              `}
             >
-              <span className="text-green-400 cursor-pointer">
-                <Info className="w-4"></Info>
-              </span>
-            </DialogCloseButton>
+              <Music size={16} />
+              Artists
+            </button>
+            <button
+              onClick={() => setContentType("tracks")}
+              className={`
+                px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2
+                ${contentType === "tracks" 
+                  ? "bg-green-400 text-gray-900 shadow-md" 
+                  : "text-gray-300 hover:text-white"}
+              `}
+            >
+              <Disc size={16} />
+              Tracks
+            </button>
           </div>
-          {data === null ? (
-            <Loader className="animate-spin text-green-400" size={30} />
-          ) : (
-            <MinutesPlayedDoughnutChart data={data?.activeMonths} />
+        </div>
+        
+        {/* Charts grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Top artists/tracks chart */}
+          <InsightCard
+            title={`Top ${numItems} ${contentType}`}
+            infoTitle={`Top ${numItems} ${contentType}`}
+            infoText={`This chart displays your top ${numItems} ${contentType} ${timeRangeInfo} based on minutes played. Hover or click on the bars to view more details.`}
+            icon={<BarChartIcon size={16} className="text-green-400" />}
+            className="lg:col-span-2"
+          >
+            {isLoading ? (
+              <ChartSkeleton />
+            ) : (
+              <BarChart 
+                data={contentType === "artists" ? artistsChart : tracksChart} 
+                trackOrArtist={contentType}
+              />
+            )}
+          </InsightCard>
+          
+          {/* Hourly activity chart */}
+          <InsightCard
+            title="Hourly Activity"
+            infoTitle="Active Hours Rankings"
+            infoText={`This chart shows which hours of the day you listen to music most frequently ${timeRangeInfo}. Each point represents the total minutes played during that hour.`}
+            icon={<Clock size={16} className="text-green-400" />}
+          >
+            {isLoading ? (
+              <ChartSkeleton />
+            ) : (
+              <MinutesPlayedLineChart data={processedData?.activeTimes || []} />
+            )}
+          </InsightCard>
+          
+          {/* Monthly activity chart (not shown for daily view) */}
+          {timeRange !== "days" && (
+            <InsightCard
+              title="Monthly Activity"
+              infoTitle="Activity by Periods"
+              infoText={`This chart shows your listening activity distribution by month ${timeRangeInfo}. Click or hover on segments to see details.`}
+              icon={<Calendar size={16} className="text-green-400" />}
+            >
+              {isLoading ? (
+                <ChartSkeleton />
+              ) : (
+                <MinutesPlayedDoughnutChart data={processedData?.activeMonths || []} />
+              )}
+            </InsightCard>
           )}
         </div>
-      )}
+      </div>
+    </div>
     </div>
   );
 }

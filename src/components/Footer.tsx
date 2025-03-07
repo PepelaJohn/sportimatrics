@@ -1,31 +1,39 @@
 import React from "react";
-import {
-  Footer,
-  FooterCopyright,
-  FooterLink,
-  FooterLinkGroup,
-} from "flowbite-react";
 import Link from "next/link";
 
-const FooterCompoment = () => {
+const FooterComponent = () => {
+  const currentYear = new Date().getFullYear();
+  
+  const footerLinks = [
+    { name: "Contact", href: "/contact" },
+    { name: "Donate", href: "/donate" },
+    { name: "Privacy Policy", href: "/privacy" },
+    { name: "Terms of Service", href: "/terms" },
+  ];
+
   return (
-    <div className="bg-black-2  flex items-center !h-[70px] !rounded-none text-[11px] text-gray-400 !justify-center">
-      <ul className="flex w-full h-full items-center justify-end px-5">
-        
-        <div className="flex items-center justify-between gap-5">
-          <li>
-            <Link href={"/donate"}>Contact</Link>
-          </li>
-          <li>
-            <Link href={"/donate"}>Donate</Link>
-          </li>
-          <li>
-            <Link href={"/donate"}>Privacy Policy</Link>
-          </li>
+    <footer className="bg-gray-900 text-gray-300 w-full">
+      <div className="container mx-auto px-4 py-3 sm:py-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between">
+          <div className="mb-4 sm:mb-0 text-center sm:text-left">
+            <span className="text-xs sm:text-sm">&copy; {currentYear} Musimeter. All rights reserved.</span>
+          </div>
+          
+          <nav className="w-full sm:w-auto">
+            <ul className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-6 text-xs sm:text-sm">
+              {footerLinks.map((link) => (
+                <li key={link.name} className="hover:text-white transition-colors">
+                  <Link href={link.href}>
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
-      </ul>
-    </div>
+      </div>
+    </footer>
   );
 };
 
-export default FooterCompoment;
+export default FooterComponent;
