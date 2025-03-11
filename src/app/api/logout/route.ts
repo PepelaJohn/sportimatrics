@@ -9,7 +9,7 @@ export const POST = async (request: NextRequest) => {
     const req = await request.json();
 
     let user = await User.findOne({ email: req.email });
-
+    console.log(user)
     if (!user)
       return NextResponse.json({ message: "Bad Request", status: 400 });
 

@@ -1,6 +1,6 @@
 'use client'
 import {  CLOSE_DISPLAY, ERROR, SUCCESS } from "@/constants";
-export default (
+const fxt =   (
   popup = {
     show: false,
     error: false,
@@ -21,3 +21,5 @@ export default (
       return popup;
   }
 };
+
+export default fxt

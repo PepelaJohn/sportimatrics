@@ -1,58 +1,82 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, Document, Model } from "mongoose";
 
-const imageSchema = new mongoose.Schema({
-  url: String,
-  height: Number,
-  width: Number,
+interface IImage {
+  url: string;
+  height: number;
+  width: number;
+}
+
+interface IDonation {
+  amount: number;
+  currency: string;
+  transactionId: string;
+  status: "pending" | "completed" | "failed";
+  createdAt: Date;
+}
+
+interface IUser extends Document {
+  display_name: string;
+  email: string;
+  follow: {
+    followerCount: number;
+    followingUsersCount: number;
+    dismissingUsersCount: number;
+  };
+  uploads: {
+    processed: boolean;
+    rawData?: mongoose.Types.ObjectId;
+    processedData?: mongoose.Types.ObjectId;
+  };
+  images: IImage[];
+  uri: string;
+  premium: boolean;
+  refresh_token: string;
+  donations: IDonation[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const ImageSchema = new Schema<IImage>({
+  url: { type: String, required: true },
+  height: { type: Number, required: true },
+  width: { type: Number, required: true },
 });
 
-const userSchema = new mongoose.Schema(
-  {
-    display_name: String,
-    email: {
-      type: String,
-      required: true,
-    },
+const DonationSchema = new Schema<IDonation>({
+  amount: { type: Number, required: true },
+  currency: { type: String, default: "USD" },
+  transactionId: { type: String, required: true, unique: true },
+  status: { type: String, enum: ["pending", "completed", "failed"], default: "pending" },
+  createdAt: { type: Date, default: Date.now },
+});
 
+const UserSchema = new Schema<IUser>(
+  {
+    display_name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
     follow: {
       type: {
-        followerCount: Number,
-        followingUsersCount: Number,
-        dismissingUsersCount: Number,
+        followerCount: { type: Number, default: 0 },
+        followingUsersCount: { type: Number, default: 0 },
+        dismissingUsersCount: { type: Number, default: 0 },
       },
-      default: {},
+      default: () => ({}),
     },
-
     uploads: {
-      processed: Boolean,
-      rawData: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "RawData",
-      },
-      processedData: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "ProcessedData",
-      },
+      processed: { type: Boolean, default: false },
+      rawData: { type: mongoose.Schema.Types.ObjectId, ref: "RawData" },
+      processedData: { type: mongoose.Schema.Types.ObjectId, ref: "ProcessedData" },
     },
-    images: {
-      type: [imageSchema],
-      default: [],
-    },
-    uri: String,
-    premium: {
-      type: Boolean,
-      default: false,
-    },
-
-    refresh_token: {
-      type: String,
-      default: "",
-    },
+    images: { type: [ImageSchema], default: [] },
+    uri: { type: String, required: true },
+    premium: { type: Boolean, default: false },
+    refresh_token: { type: String, default: "" },
+    donations: { type: [DonationSchema], default: [] },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-const User = mongoose.models.User || mongoose.model("User", userSchema);
+
+
+const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
 export default User;

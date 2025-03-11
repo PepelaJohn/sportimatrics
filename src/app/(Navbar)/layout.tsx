@@ -1,5 +1,6 @@
 import NavBar from "@/components/Navbar";
-import Image from "next/image";
+import CookieConsent from "@/components/CookieConsent";
+
 
 export default function RootLayout({
   children,
@@ -10,6 +11,7 @@ export default function RootLayout({
     <>
       <NavBar />
       {children}
+      <CookieConsent></CookieConsent>
     </>
   );
 }

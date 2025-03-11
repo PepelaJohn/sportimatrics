@@ -1,256 +1,327 @@
 "use client";
-import { useEffect, useState } from "react";
-import JSZip from "jszip";
 
-import { Trash2 as Delete } from "lucide-react";
-import { useDispatch } from "react-redux";
-import { ERROR, SUCCESS } from "@/constants";
-import { ChangeEvent, DragEvent } from "react";
-import { uploadToDB } from "@/api";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import JSZip from "jszip";
+import { Upload, Trash2, FileText, AlertCircle, CheckCircle } from "lucide-react";
+import { ERROR, SUCCESS } from "@/constants";
+import type { ChangeEvent, DragEvent } from "react";
+import { uploadToDB } from "@/api";
 
-const Home = () => {
-  const [data, setData] = useState<{ [key: string]: any }>({});
-  const router = useRouter()
-  const [fileProgress, setFileProgress] = useState<{
-    [filename: string]: number;
-  }>({});
+interface FileProgress {
+  [filename: string]: number;
+}
+
+interface ProcessedData {
+  music_history?: any[];
+  podcast_history?: any[];
+  playlists?: any[];
+  [key: string]: any;
+}
+
+const FileUploader = () => {
+  const router = useRouter();
+  const dispatch = useDispatch();
+  
+  const [data, setData] = useState<ProcessedData>({});
+  const [fileProgress, setFileProgress] = useState<FileProgress>({});
   const [dragOver, setDragOver] = useState<boolean>(false);
   const [processingComplete, setProcessingComplete] = useState<boolean>(false);
-  const dispatch = useDispatch();
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleDragOver = (event: DragEvent) => {
+  const handleDragOver = useCallback((event: DragEvent) => {
     event.preventDefault();
     setDragOver(true);
-  };
+  }, []);
 
-  const handleDragLeave = () => {
+  const handleDragLeave = useCallback(() => {
     setDragOver(false);
-  };
+  }, []);
 
-  const handleDrop = async (event: DragEvent) => {
+  const handleDrop = useCallback(async (event: DragEvent) => {
     event.preventDefault();
     setDragOver(false);
     const selectedFile = event.dataTransfer.files[0];
-    if (selectedFile) {
+    if (selectedFile && (selectedFile.type === "application/zip" || selectedFile.type === "application/x-zip-compressed")) {
       await processFile(selectedFile);
+    } else {
+        console.log(selectedFile.type)
+      setError("Please upload a zip file");
+    //   dispatch({ type: ERROR, payload: "Please upload a zip file" });
     }
-  };
+  }, [dispatch]);
 
-  const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      await processFile(file);
-    }
-  };
+    if (file && (file.type === "application/zip" || file.type === "application/x-zip-compressed")) {
+        await processFile(file);
+      } else if (file) {
+        setError("Please upload a zip file");
+        dispatch({ type: ERROR, payload: file.type });
+      }
+      
+  }, [dispatch]);
+
+  const removeFile = useCallback((filename: string) => {
+    setFileProgress((prev) => {
+      const newProgress = { ...prev };
+      delete newProgress[filename];
+      return newProgress;
+    });
+  }, []);
 
   const processFile = async (file: File) => {
+    setError(null);
     setProcessingComplete(false);
+    setIsUploading(true);
+    
     const zip = new JSZip();
     let zipData: JSZip;
+    
     try {
       zipData = await zip.loadAsync(file);
     } catch (error: any) {
-      dispatch({ type: ERROR, payload: "Error parsing file" });
+      setIsUploading(false);
+      setError("Error parsing file. Please ensure it's a valid zip file.");
+      dispatch({ type: ERROR, payload: "Error parsing zip file" });
       return;
     }
 
     const musicHistory: any[] = [];
     const podcastHistory: any[] = [];
-    const playlistHistory: { [key: string]: any } = [];
-    let rest: { [key: string | number]: any } = {};
+    const playlistHistory: any[] = [];
+    const rest: { [key: string]: any } = {};
 
-    await Promise.all(
-      Object.keys(zipData.files).map(async (filename) => {
-        if (
-          !filename.endsWith(".json") ||
-          filename.toLowerCase().startsWith("inferences") ||
-          filename.toLowerCase().startsWith("searchqueries")
-        )
-          return; // Skip non-JSON files
+    try {
+      await Promise.all(
+        Object.keys(zipData.files).map(async (filename) => {
+          if (
+            !filename.endsWith(".json") ||
+            filename.toLowerCase().includes("inferences") ||
+            filename.toLowerCase().includes("searchqueries")
+          ) {
+            return; // Skip non-JSON files
+          }
 
-        return zipData.files[filename]
-          .async("string", (metadata) => {
-            setFileProgress((prevProgress) => ({
-              ...prevProgress,
-              [filename]: metadata.percent,
-            }));
-          })
-          .then((fileContent) => {
-            try {
-              const jsonContent = JSON.parse(fileContent);
+          return zipData.files[filename]
+            .async("string", (metadata) => {
+              setFileProgress((prevProgress) => ({
+                ...prevProgress,
+                [filename]: metadata.percent,
+              }));
+            })
+            .then((fileContent) => {
+              try {
+                const jsonContent = JSON.parse(fileContent);
+                const simpleName = filename.split("/").pop()?.replace(".json", "") || filename;
 
-              if (
-                filename.includes("StreamingHistory_music_") &&
-                filename.endsWith(".json")
-              ) {
-                musicHistory.push(...jsonContent);
-              } else if (
-                filename.includes("StreamingHistory_podcast_") &&
-                filename.endsWith(".json")
-              ) {
-                podcastHistory.push(...jsonContent);
-              } else if (
-                filename.includes("Playlist") &&
-                filename.endsWith(".json")
-              ) {
-                playlistHistory.push(...jsonContent.playlists);
-              } else {
-                rest[
-                  filename
-                    .split("/")
-                    [filename.split.length - 1]?.replace(".json", "")
-                    ?.toLowerCase()
-                ] = jsonContent;
+                if (filename.includes("StreamingHistory_music_")) {
+                  musicHistory.push(...jsonContent);
+                } else if (filename.includes("StreamingHistory_podcast_")) {
+                  podcastHistory.push(...jsonContent);
+                } else if (filename.includes("Playlist")) {
+                  playlistHistory.push(...(jsonContent.playlists || []));
+                } else {
+                  rest[simpleName.toLowerCase()] = jsonContent;
+                }
+              } catch (error: any) {
+                console.error(`Error parsing ${filename}:`, error);
               }
-            } catch (error: any) {
-              dispatch({
-                type: ERROR,
-                payload: error.message || "Error parsing file",
-              });
-            }
-          });
-      })
-    );
+            });
+        })
+      );
 
-    if (musicHistory.length === 0 && podcastHistory.length === 0) {
-      dispatch({ type: ERROR, payload: "No files" });
-    } else {
-      const combinedData = {
-        music_history: musicHistory,
-        podcast_history: podcastHistory,
-        playlists: playlistHistory,
-        ...rest,
-      };
-      setData(combinedData)
-     
-
-      dispatch({ type: SUCCESS, payload: "Successfully uploaded" });
-    }
-
-    if (musicHistory.length !== 0 || podcastHistory.length !== 0) {
-      setProcessingComplete(true);
+      if (musicHistory.length === 0 && podcastHistory.length === 0) {
+        setError("No valid streaming history files found in the archive");
+        dispatch({ type: ERROR, payload: "No streaming history files found" });
+      } else {
+        const combinedData = {
+          music_history: musicHistory,
+          podcast_history: podcastHistory,
+          playlists: playlistHistory,
+          ...rest,
+        };
+        setData(combinedData);
+        setProcessingComplete(true);
+        dispatch({ type: SUCCESS, payload: "Files successfully processed" });
+      }
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred");
+      dispatch({ type: ERROR, payload: err.message || "Processing error" });
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const handleUpload = async () => {
-    if (!!Object.keys(data).length) {
-      await uploadToDB(data);
-
-      dispatch({ type: SUCCESS, payload: "Data successfully uploaded to DB" });
-      setFileProgress({});
-      setData({});
-      setProcessingComplete(false);
-      router.push('/')
-    } else {
+    if (Object.keys(data).length === 0) {
       dispatch({ type: ERROR, payload: "No data to upload" });
+      return;
+    }
+    
+    setIsUploading(true);
+    
+    try {
+     const response =  await uploadToDB(data);
+
+     if(response.ok){
+
+       dispatch({ type: SUCCESS, payload: "Data successfully uploaded" });
+       setFileProgress({});
+       setData({});
+       setProcessingComplete(false);
+       router.push('/insights');
+     }else{
+
+       dispatch({ type: ERROR, payload: "Upload failed" });
+     }
+    } catch (err: any) {
+      dispatch({ type: ERROR, payload: err.message || "Upload failed" });
+    } finally {
+      setIsUploading(false);
     }
   };
 
+  const getMusicCount = () => data.music_history?.length || 0;
+  const getPodcastCount = () => data.podcast_history?.length || 0;
+  const getPlaylistCount = () => data.playlists?.length || 0;
+
   return (
-    <section className="h-full w-full text-white-1 flex flex-col items-center justify-center">
-      {!processingComplete && (
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className="flex bg-gray-900 min-h-[150px] min-w-[180px] rounded-lg"
-        >
-          <input
-            hidden
-            id="file"
-            type="file"
-            accept=".zip"
-            onChange={handleFileUpload}
-            className="mt-4"
-          />
-          {/* <label
-          className={`h-full w-full px-2 ${
-            dragOver ? "bg-gray-800" : ""
-          } cursor-pointer rounded-lg py-3 flex items-center justify-center`}
-          htmlFor="file"
-        >
-          <div className="flex text-gray-1 justify-center items-center flex-col gap-5">
-            <Upload className="text-xs w-6" />
-
-            <p className="text-[11px]">Drag and drop your file here</p>
-            <p className="text-[10px]">.ZIP</p>
-          </div>
-        </label> */}
-
-          <label
-            className={`h-full w-full  px-2 custum-file-upload border-gray-1 ${
-              dragOver ? "bg-gray-800" : ""
-            } cursor-pointer rounded-lg py-3 flex items-center justify-center`}
-            htmlFor="file"
+    <div className="w-full max-w-2xl mx-auto nav-height px-4 py-8">
+      <div className="rounded-xl bg-gradient-to-br from-zinc-900 to-black shadow-xl p-6 w-full border border-zinc-800">
+        <h2 className="text-xl font-semibold text-white-1 mb-6 text-center">
+          Upload Your Spotify Data
+        </h2>
+        
+        {!processingComplete && (
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`transition-all duration-300 border-2 border-dashed rounded-lg p-8 text-center ${
+              dragOver 
+                ? "border-green-500 bg-green-900/10" 
+                : "border-zinc-700 hover:border-green-500"
+            }`}
           >
-            <div className="icon">
-              <svg
-                className="fill-gray-1"
-                viewBox="0 0 24 24"
-                fill=""
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                <g
-                  id="SVGRepo_tracerCarrier"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                ></g>
-                <g id="SVGRepo_iconCarrier">
-                  {" "}
-                  <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
-                    d="M10 1C9.73478 1 9.48043 1.10536 9.29289 1.29289L3.29289 7.29289C3.10536 7.48043 3 7.73478 3 8V20C3 21.6569 4.34315 23 6 23H7C7.55228 23 8 22.5523 8 22C8 21.4477 7.55228 21 7 21H6C5.44772 21 5 20.5523 5 20V9H10C10.5523 9 11 8.55228 11 8V3H18C18.5523 3 19 3.44772 19 4V9C19 9.55228 19.4477 10 20 10C20.5523 10 21 9.55228 21 9V4C21 2.34315 19.6569 1 18 1H10ZM9 7H6.41421L9 4.41421V7ZM14 15.5C14 14.1193 15.1193 13 16.5 13C17.8807 13 19 14.1193 19 15.5V16V17H20C21.1046 17 22 17.8954 22 19C22 20.1046 21.1046 21 20 21H13C11.8954 21 11 20.1046 11 19C11 17.8954 11.8954 17 13 17H14V16V15.5ZM16.5 11C14.142 11 12.2076 12.8136 12.0156 15.122C10.2825 15.5606 9 17.1305 9 19C9 21.2091 10.7909 23 13 23H20C22.2091 23 24 21.2091 24 19C24 17.1305 22.7175 15.5606 20.9844 15.122C20.7924 12.8136 18.858 11 16.5 11Z"
-                    fill=""
-                  ></path>{" "}
-                </g>
-              </svg>
-            </div>
-            <div className="flex flex-col items-center text-xs text-gray-1">
-              <span>Drag files here</span>
-              <span>.ZIP</span>
-            </div>
-            <input id="file" type="file" />
-          </label>
-        </div>
-      )}
-      {Object.keys(fileProgress).length > 0 && (
-        <div className="mt-4 w-full max-w-xl">
-          {Object.keys(fileProgress).map((filename) => (
-            <div
-              key={filename}
-              className="flex justify-between items-center bg-zinc-900 py-3 px-5 text-sm rounded-lg mb-2"
+            <input
+              hidden
+              id="file-upload"
+              type="file"
+              accept=".zip"
+              onChange={handleFileUpload}
+            />
+            
+            <label
+              htmlFor="file-upload"
+              className="flex flex-col items-center justify-center cursor-pointer"
             >
-              <span className="truncate capitalize">
-                {filename
-                  .split("/")
-                  [filename.split.length - 1]?.replace(".json", "") || filename.replace('json', "")}
-              </span>
-              <div className="flex gap-3">
-                <span className="flex-1">
-                  {fileProgress[filename].toFixed(0)}%
-                </span>
-
-                <span className="text-red-600 h-full cursor-pointer hover:bg-zinc-950 easeinOut rounded-lg px-3">
-                  <Delete className="w-4" />
-                </span>
+              <Upload className="w-12 h-12 mb-4 text-green-500" />
+              <p className="text-lg text-zinc-300 mb-2">
+                Drop your Spotify data here
+              </p>
+              <p className="text-sm text-zinc-500 mb-4">
+                or click to browse files
+              </p>
+              <div className="px-4 py-2 bg-green-600 hover:bg-green-500 rounded-full text-white-1 text-sm transition-colors">
+                Select ZIP File
+              </div>
+            </label>
+          </div>
+        )}
+        
+        {error && (
+          <div className="mt-4 flex items-center gap-2 p-3 bg-red-900/30 border border-red-700 rounded-lg text-red-200">
+            <AlertCircle className="w-5 h-5 text-red-400" />
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
+        
+        {Object.keys(fileProgress).length > 0 && (
+          <div className="mt-6 space-y-2 max-h-60 overflow-y-auto pr-2">
+            <h3 className="text-sm font-medium text-zinc-400 mb-2">Processing files</h3>
+            {Object.keys(fileProgress).map((filename) => {
+              const displayName = filename.split("/").pop()?.replace(".json", "") || filename;
+              const progress = fileProgress[filename];
+              
+              return (
+                <div
+                  key={filename}
+                  className="flex justify-between items-center bg-zinc-800/50 p-3 rounded-lg text-sm"
+                >
+                  <div className="flex items-center gap-2 truncate max-w-[70%]">
+                    <FileText className="w-4 h-4 text-green-400 flex-shrink-0" />
+                    <span className="truncate text-zinc-300">{displayName}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="w-24 bg-zinc-700 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-green-500 h-full transition-all duration-300"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    
+                    <span className="text-xs text-zinc-400 w-9 text-right">
+                      {progress.toFixed(0)}%
+                    </span>
+                    
+                    <button
+                      onClick={() => removeFile(filename)}
+                      className="text-red-400 p-1 rounded hover:bg-zinc-700 transition-colors"
+                      aria-label="Remove file"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        
+        {processingComplete && (
+          <div className="mt-6 space-y-4">
+            <div className="p-4 bg-green-900/20 border border-green-800/50 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <CheckCircle className="w-5 h-5 text-green-400" />
+                <h3 className="text-green-300 font-medium">Processing complete</h3>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="bg-black/50 p-3 rounded-lg">
+                  <p className="text-2xl font-bold text-white-1">{getMusicCount()}</p>
+                  <p className="text-xs text-green-400 mt-1">Music Tracks</p>
+                </div>
+                <div className="bg-black/50 p-3 rounded-lg">
+                  <p className="text-2xl font-bold text-white-1">{getPodcastCount()}</p>
+                  <p className="text-xs text-green-400 mt-1">Podcasts</p>
+                </div>
+                <div className="bg-black/50 p-3 rounded-lg">
+                  <p className="text-2xl font-bold text-white-1">{getPlaylistCount()}</p>
+                  <p className="text-xs text-green-400 mt-1">Playlists</p>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-      )}
-      {processingComplete && (
-        <button
-          onClick={handleUpload}
-          className="mt-4 bg-green-500 hover:bg-green-400 text-white py-2 px-4 rounded"
-        >
-          Upload
-        </button>
-      )}
-    </section>
+            
+            <button
+              onClick={handleUpload}
+              disabled={isUploading}
+              className={`w-full py-3 px-4 rounded-full font-medium transition-all
+                ${isUploading
+                  ? "bg-green-700 text-green-100 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-500 text-white-1"
+                }`}
+            >
+              {isUploading ? "Uploading..." : "Upload"}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
-export default Home;
+export default FileUploader;

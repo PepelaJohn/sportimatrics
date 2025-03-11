@@ -3,17 +3,10 @@ const nextConfig = {
   reactStrictMode: false,
   images: {
     remotePatterns: [
-      {
-        protocol: "http",
-        hostname: "www.parliament.go.ke",
-        port: "",
-        pathname: "/sites/default/files/**",
-      },
+      
       {
         protocol: "https",
-        hostname: "www.kewopa.org",
-        port: "",
-        pathname: "/wp-content/uploads/**",
+        hostname: "i.scdn.co",
       },
     ],
   },

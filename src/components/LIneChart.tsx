@@ -1,16 +1,17 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 interface MinutesPlayedLineChartProps {
   data: { hour: number; minutesPlayed: number }[];
+  height?: number;
 }
 
-const MinutesPlayedLineChart: React.FC<MinutesPlayedLineChartProps> = ({ data }) => {
+const MinutesPlayedLineChart: React.FC<MinutesPlayedLineChartProps> = ({ data, height = 300 }) => {
   const sortedData = data.sort((a, b) => a.hour - b.hour);
-  const labels = sortedData.map(d => d.hour);
+  const labels = sortedData.map(d => `${d.hour}:00`);
   const minutesPlayed = sortedData.map(d => d.minutesPlayed);
 
   const chartData = {
@@ -19,42 +20,99 @@ const MinutesPlayedLineChart: React.FC<MinutesPlayedLineChartProps> = ({ data })
       {
         label: 'Minutes Played',
         data: minutesPlayed,
-        fill: false,
-        borderColor: 'rgba(75, 192, 192, 0.6)',
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        tension: 0.4
+        fill: true,
+        borderColor: '#1DB954', // Spotify green
+        backgroundColor: 'rgba(29, 185, 84, 0.1)', // Spotify green with opacity
+        borderWidth: 2,
+        pointBackgroundColor: '#1DB954',
+        pointBorderColor: '#000',
+        pointBorderWidth: 1,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: '#1ED760', // Slightly lighter green for hover
+        pointHoverBorderColor: '#fff',
+        tension: 0.3,
       },
     ],
   };
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top' as const,
+        display: false, // Hide legend for cleaner look
       },
-      title: {
-        display: false,
-        text: 'Minutes Played Per Hour',
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: '#fff',
+        bodyColor: '#1DB954',
+        bodyFont: {
+          weight: 'bold',
+        },
+        padding: 12,
+        cornerRadius: 8,
+        displayColors: false,
+        callbacks: {
+          label: function(context: any) {
+            return `${context.parsed.y} minutes`;
+          }
+        }
       },
     },
     scales: {
       x: {
-        title: {
+        grid: {
           display: true,
-          text: 'Hour of the Day',
+          color: 'rgba(255, 255, 255, 0.1)',
+        },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.7)',
+          font: {
+            size: 10,
+          },
+        },
+        title: {
+          display: false,
         },
       },
       y: {
-        title: {
+        grid: {
           display: true,
-          text: 'Minutes Played',
+          color: 'rgba(255, 255, 255, 0.1)',
         },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.7)',
+          font: {
+            size: 10,
+          },
+          padding: 8,
+        },
+        title: {
+          display: false,
+        },
+        beginAtZero: true,
+      },
+    },
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    animation: {
+      duration: 1000,
+    },
+    elements: {
+      line: {
+        borderJoinStyle: 'round',
       },
     },
   };
 
-  return <Line data={chartData} options={options} />;
+  return (
+    <div style={{ height: `${height}px`, width: '100%' }}>
+      <Line data={chartData} options={options as any} />
+    </div>
+  );
 };
 
 export default MinutesPlayedLineChart;

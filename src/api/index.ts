@@ -342,7 +342,8 @@ export const uploadToDB = async (formData: { [key: string]: any }) => {
     );
     const data = await promiseData.json();
 
-    console.log(data)
+   
+    return {...data, ok:promiseData.ok}
   } catch (error: any) {
     //console.table(error);
   }
@@ -364,7 +365,7 @@ export const getFormDB = async () => {
     );
     const data = await promiseData.json();
 
-    return data;
+    return {...data,ok:promiseData.ok };
   } catch (error: any) {
     //console.table(error);
   }

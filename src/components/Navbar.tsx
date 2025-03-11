@@ -1,240 +1,417 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
-import Logo from "@/assets/logo.png";
+import Logo from "../assets/logom2.png";
+import React, { useEffect, useCallback, useState, useRef } from "react";
 import Link from "next/link";
-import { MdSearch } from "react-icons/md";
-import { IoMdLogOut } from "react-icons/io";
-import { usePathname } from "next/navigation";
-import { getCookie, getInitials } from "@/lib/utils";
-import { getProfile, searchSpotify } from "@/api";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { CLOSE_DISPLAY } from "@/constants";
+import { motion, AnimatePresence } from "framer-motion";
+import { getCookie, getInitials } from "@/lib/utils";
+import { CLOSE_DISPLAY, SHOW_COOKIE_PREFERENCES } from "@/constants";
 import Popup from "./Popup";
 import DropdownMenuDemo from "./DropDown";
+import {
+  Search,
+  Menu,
+  X,
+  LogOut,
+  Music,
+  User,
+  Clock,
+  BarChart2,
+  Upload,
+} from "lucide-react";
+import SpotifyDropdownMenu from "./Menu";
+import useMediaQuery from "@/hooks/useMediaQuery";
+
+// Type definitions
+interface NavLink {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+  highlight?: boolean;
+}
+
+interface UserState {
+  display_name?: string;
+  images?: Array<{ url: string }>;
+  [key: string]: any;
+}
+
+interface RootState {
+  user: UserState;
+  info: {
+    show: boolean;
+    message: string;
+    type: string;
+  };
+}
 
 const NavBar = () => {
-  const [sidebar, setSideBar] = useState<boolean>(false);
-
-  const [searchParams, setSearchParams] = useState<string>("");
-
-  // const [user, setUser] = useState<promiseUser>();
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [loggedIn, setLoggedIn] = useState<boolean>(false);
+  const isAbove = useMediaQuery("(min-width: 768px)");
   const pathname = usePathname();
   const router = useRouter();
-  const timoeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const timoeoutRef2 = useRef<NodeJS.Timeout | null>(null);
-  const popupRef = useRef<any>(null);
-  const [loggedIn, setLoggedIn] = useState<boolean>(false);
   const dispatch = useDispatch();
 
   const popup = useSelector((state: any) => state.info);
-  const user = useSelector((state: any) => state.user);
+  const user = useSelector((state: RootState) => state.user);
+  const popupRef = useRef<any>(null);
+
+  const navLinks: NavLink[] = [
+    {
+      name: "Top Tracks",
+      href: "/top-tracks?range=short_term",
+      icon: <Music className="w-4 h-4" />,
+    },
+    {
+      name: "Top Artists",
+      href: "/top-artists?range=short_term",
+      icon: <User className="w-4 h-4" />,
+    },
+    {
+      name: "Recent Tracks",
+      href: "/recent-tracks",
+      icon: <Clock className="w-4 h-4" />,
+    },
+    {
+      name: "Insights",
+      href: "/insights?t=artists",
+      icon: <BarChart2 className="w-4 h-4" />,
+    },
+    {
+      name: "Upload",
+      href: "/upload",
+      icon: <Upload className="w-4 h-4" />,
+      highlight: true,
+    },
+  ];
 
   useEffect(() => {
-    if (popup.show) {
-      // use different variable as this whill happen after variable has changed
+    console.log(user)
+    const hasConsented = localStorage.getItem("consent")! === "true";
 
-      timoeoutRef2.current = setTimeout(() => {
-        popupRef.current.classList.add("translateandFade");
-      }, 1800);
-
-      timoeoutRef.current = setTimeout(() => {
-        dispatch({ type: CLOSE_DISPLAY });
-        // popupRef.current.classList.remove("translateandFade");
-      }, 2000);
-    }
-
-    return () => {
-      clearTimeout(timoeoutRef.current!);
-      clearTimeout(timoeoutRef2.current!);
-    };
-  }, [popup.show]);
-
-  useEffect(() => {
-    if (!!Object.keys(user).length || !!getCookie("_gtPaotwcsA")) {
-      setLoggedIn(true);
-    } else {
-      setLoggedIn(false);
+    if (!hasConsented) {
+      setTimeout(() => {
+        dispatch({ type: SHOW_COOKIE_PREFERENCES });
+      }, 1000 * 50);
     }
   }, []);
 
-  let style = {
-    right: sidebar ? 0 : -300,
-  };
-  let navlinks = [
-    "Top Tracks",
-    "Top Artists",
-    // "Top Genres",
-    "Recent Tracks",
-    "insights",
-    "upload",
-    // "discover",
-  ];
+  useEffect(() => {
+    let dismissTimer: NodeJS.Timeout;
+    let fadeTimer: NodeJS.Timeout;
+
+    if (popup.show) {
+      fadeTimer = setTimeout(() => {
+        document.querySelector(".popup-container")?.classList.add("fade-out");
+      }, 2800);
+
+      dismissTimer = setTimeout(() => {
+        dispatch({ type: CLOSE_DISPLAY });
+      }, 3000);
+    }
+
+    return () => {
+      clearTimeout(dismissTimer);
+      clearTimeout(fadeTimer);
+    };
+  }, [popup.show, dispatch]);
+
+  useEffect(() => {
+    setLoggedIn(!!Object.keys(user).length || !!getCookie("_gtPaotwcsA"));
+  }, []);
+
+  const handleSearchSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (searchQuery.trim()) {
+        router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        setSearchQuery("");
+        setIsMenuOpen(false);
+      }
+    },
+    [searchQuery, router]
+  );
+
+  const toggleMenu = useCallback(() => {
+    setIsMenuOpen((prev) => !prev);
+  }, []);
+
   return (
     <>
-      <nav
-        className={`w-full ${
-          pathname === "/" ? " bg-black-3 " : "bg-black-3 shadow-2xl "
-        } easeinOut justify-center  !z-50 text-white   text-12 fixed top-0 left-0 right-0 h-[100px] flex items-center`}
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 100, damping: 20 }}
+        className={`fixed top-0 left-0 right-0 z-50 text-white-1 ${
+          pathname === "/"
+            ? "bg-black/70 backdrop-blur-md"
+            : "bg-black/90 backdrop-blur-md shadow-xl"
+        } h-16 md:h-20`}
       >
-        <div className="max-w-5xl   max-sm:px-4 sm:px-14  w-full h-full flex items-center ">
-          <Link
-            href={"/"}
-            className="flex items-center justify-center flex-grow-0 flex-shrink-0 h-8 w-8 md:h-10 md:w-10"
-          >
-            <img src={Logo.src} alt="Logo" className="w-full h-full" />
+        <div className="container mx-auto h-full flex items-center justify-between px-4">
+          <Link href="/" className="flex items-center">
+            <div className="flex items-center justify-center relative w-8 h-8 md:w-10 md:h-10">
+              <span className="absolute text-green-400 font-bold text-xl md:text-2xl">
+                <img src={Logo.src} alt="" className="w-11/12 object-" />
+              </span>
+              {/* <div className="w-full h-full rounded-full border-2 border-green-400/30 animate-pulse"></div> */}
+            </div>
+            <span className="ml-2 text-white-1 font-semibold tracking-wider    hidden sm:block">
+              MUSIMETER
+            </span>
           </Link>
-          {/* <Toggle className="mr-2 h-4 ml-5 w-4" /> */}
+
           {loggedIn && (
-            <div className="flex-1 justify-end hidden   text-[10px]  easeinOut uppercase gap-5 md:flex items-center">
-              {navlinks.map((link) => (
-                <p
-                  key={link + "x"}
-                  className={`  easeinOut ${
-                    link === "upload"
-                      ? "bg-yellow-500 h-6  flex items-center px-3 rounded-full"
-                      : "text-white-2 hover:text-white-1"
-                  }`}
-                >
+            <div className="hidden md:flex items-center space-x-6">
+              {navLinks.map((link) => {
+                return (
                   <Link
-                    onClick={() => setSideBar(false)}
-                    key={link}
-                    href={
-                      link.toLowerCase() === "insights"
-                        ? "insights?t=artists"
-                        : "/" +
-                          link.split(" ").join("-").toLowerCase() +
-                          `${link.startsWith("Top") ? "?range=short_term" : ""}`
-                    }
+                    key={link.name}
+                    href={link.href}
+                    className={`group hidden md:flex items-center space-x-1 text-xs uppercase easeinOut tracking-wide transition-colors ${
+                      link.href.startsWith(pathname) &&
+                      !link.highlight &&
+                      pathname !== "/"
+                        ? "!text-green-400 hover:text-white-1"
+                        : " text-white-1"
+                    } ${
+                      link.highlight
+                        ? "bg-amber-500 px-3 py-1 rounded-full text-black hover:bg-amber-400"
+                        : ""
+                    }`}
                   >
-                    {link}
+                    <span className={`${!link.highlight ? "" : ""}`}>
+                      {link.name}
+                    </span>
                   </Link>
-                </p>
-              ))}
+                );
+              })}
 
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-
-                  router.push(`/search?q=${searchParams.split(" ").join("+")}`);
-                  setSearchParams("");
-                }}
-                className="bg-black-5 h-8  items-center pr-3 pl-3 rounded-full w-[150px] flex"
+                onSubmit={handleSearchSubmit}
+                className="relative max-lg:hidden  flex items-center"
               >
                 <input
-                  onChange={(e) => setSearchParams(e.target.value)}
-                  className="bg-transparent flex-1 !text-xs !outline-none !border-none text-white-2 w-[100px]"
                   type="text"
-                  value={searchParams!}
-                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search..."
+                  className="bg-gray-900/80 rounded-full py-1.5 pl-3  pr-8 text-xs w-36 focus:w-48 transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-green-500"
                 />
-                <MdSearch className="!text-[15px] text-white-2 cursor-pointer   h-full flex items-center " />
+                <button
+                  type="submit"
+                  className="absolute right-2 text-gray-400 hover:text-white-1 "
+                >
+                  <Search className="w-4 h-4" />
+                </button>
               </form>
+
+              {isAbove ? (
+                <SpotifyDropdownMenu user={user}></SpotifyDropdownMenu>
+              ) : (
+                <div className="h-8 w-8  rounded-full overflow-hidden bg-gray-800 border border-gray-700 flex items-center justify-center text-xs">
+                  
+                  {user?.images?.length ? (
+                    <img
+                      src={user.images[0].url}
+                      alt={user.display_name || "User"}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span>
+                      {user?.display_name ? getInitials(user.display_name) : ""}
+                    </span>
+                  )}
+                </div>
+              )}
+             
             </div>
           )}
 
-          {loggedIn && (
-            <DropdownMenuDemo>
-              <span
-                className={`ml-5 hidden text-[10px] cursor-pointer  ${
-                  !loggedIn
-                    ? "bg-green-400  rounded-full h-8  flex justify-center items-center px-5 text-black-1 "
-                    : " !text-white-1 "
-                }  !hover:text-white-1 easeinOut ml-auto text-white-1 uppercase md:flex`}
-              >
-                {loggedIn ? (
-                  <span className="w-8 h-8 rounded-full ml-5 bg-black-5 !overflow-hidden text-sm flex cursor-pointer items-center justify-center">
-                    {/* {!!user?.display_name
-                      ? getInitials(user?.display_name!)
-                      : ""} */}
+          <div className="md:hidden flex items-center space-x-4">
+         
 
-                    {!!user?.images?.length ? (
-                      <img
-                        className="inline-block shrink-0 rounded-2xl w-full h-full "
-                        src={user?.images[0]?.url}
-                        //src="https://raw.githubusercontent.com/Loopple/loopple-public-assets/main/riva-dashboard-tailwind/img/avatars/avatar1.jpg"
-                        alt="image"
-                      />
-                    ) : (
-                      <>
-                        {!!user?.display_name
-                          ? getInitials(user?.display_name!)
-                          : ""}
-                      </>
-                    )}
-                  </span>
-                ) : (
-                  "Login"
-                )}
-              </span>
-            </DropdownMenuDemo>
-          )}
-
-          {loggedIn && (
-            <div className="flex-1 max-md:flex hidden  text-white-1  easeinOut uppercase items-center justify-end">
-              <button
-                onClick={() => setSideBar((prev) => !prev)}
-                className="rounded-lg bg-black-5 h-8 w-16 text-[10px]"
-              >
-                Menu
-              </button>
-            </div>
-          )}
-          {!loggedIn && (
-            <div className="flex-1 flex   text-white-1   uppercase items-center justify-end">
+            {!loggedIn ? (
               <Link
-                href={"/auth"}
-                className="rounded-lg bg-black-5 flex items-center justify-center h-8 w-16 text-[10px]"
+                href="/auth"
+                className="bg-green-500 hover:bg-green-400 transition-colors duration-200 px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wide"
               >
                 Login
               </Link>
-            </div>
-          )}
+            ) : (
+             <>
+             
+             <button
+                onClick={toggleMenu}
+                className="p-2 text-gray-400 hover:text-white-1 transition-colors"
+                aria-label="Toggle menu"
+              >
+                {isMenuOpen ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </button>
+             </>
+            )}
+          </div>
 
-          <aside
-            style={style}
-            className="fixed hidden z-50 max-md:flex text-white-1 flex-col bg-black-1   top-0 easeinOut right-0 bg-black min-h-[100vh] h-full w-[300px]"
-          >
-            <div className="flex items-center justify-end px-5 text-[30px] h-[100px]">
-              <button onClick={() => setSideBar(false)}>&times;</button>
-            </div>
-            <div className="flex-1 flex flex-col text-sm leading-10 gap-5 xl items-start pl-">
-              <Link
-                className="capitalize hover:bg-slate-900 w-full pl-3 easeinOut"
-                onClick={() => setSideBar(false)}
-                href={"/"}
-              >
-                Home
-              </Link>
-              {navlinks.map((link, i) => (
-                <Link
-                  onClick={() => setSideBar(false)}
-                  key={i}
-                  href={link.split(" ").join("-").toLowerCase()}
-                  className="capitalize hover:bg-slate-900 w-full pl-3 easeinOut"
-                >
-                  {link}
-                </Link>
-              ))}
-              <Link
-                className="capitalize hover:bg-slate-900 w-full pl-3 easeinOut"
-                href={"/profile"}
-              >
-                Profile
-              </Link>
-              {loggedIn && (
-                <div className="mt-auto flex items-center w-full justify-between pr-10 mb-5">
-                  <Link className="pl-3" href={"/logout"}>
-                    Logout
-                  </Link>
-                  <IoMdLogOut className="cursor-pointer"></IoMdLogOut>
-                </div>
-              )}
-            </div>
-          </aside>
+          {!loggedIn && (
+            <Link
+              href="/auth"
+              className="bg-green-500 hover:bg-green-400 transition-colors duration-200 px-5 py-2 rounded-full text-sm font-medium uppercase tracking-wide hidden md:block"
+            >
+              Login
+            </Link>
+          )}
         </div>
-      </nav>
-      {popup.show && <Popup popup={popup} popupRef={popupRef} />}
+      </motion.nav>
+
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed top-16 inset-x-0 z-40 bg-gray-900 overflow-auto  backdrop-blur-md text-white-1 md:hidden"
+          >
+            <div className="px-4 py-6 space-y-4">
+              {/* Mobile Search */}
+              <form
+                onSubmit={handleSearchSubmit}
+                className="relative  flex items-center"
+              >
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search..."
+                  className="bg-gray-900 rounded-md py-2 pl-4 pr-10 text-sm w-full focus:outline-none focus:ring-1 focus:ring-green-500"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-3 text-gray-400 hover:text-white-1 "
+                >
+                  <Search className="w-5 h-5" />
+                </button>
+              </form>
+
+              {/* Navigation Links */}
+              <div className="space-y-2">
+                <Link
+                  href="/"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`flex items-center space-x-3 p-3 rounded-md ${
+                    pathname === "/"
+                      ? "bg-gray-800 text-white-1 "
+                      : "text-gray-300 hover:bg-gray-800/50"
+                  }`}
+                >
+                  <span className="text-green-400">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                      />
+                    </svg>
+                  </span>
+                  <span>Home</span>
+                </Link>
+
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`flex items-center space-x-3 p-3 rounded-md ${
+                      pathname.includes(link.href.split("?")[0])
+                        ? "bg-gray-800 text-white-1 "
+                        : link.highlight
+                        ? "bg-amber-500/20 text-amber-500"
+                        : "text-gray-300 hover:bg-gray-800/50"
+                    }`}
+                  >
+                    <span
+                      className={
+                        link.highlight ? "text-amber-500" : "text-green-400"
+                      }
+                    >
+                      {link.icon}
+                    </span>
+                    <span>{link.name}</span>
+                  </Link>
+                ))}
+
+                <Link
+                  onClick={() => setIsMenuOpen(false)}
+                  href="/recommendations"
+                  className={`flex items-center space-x-3 p-3 rounded-md ${
+                    pathname === "/recommendations"
+                      ? "bg-gray-800 text-white-1 "
+                      : "text-gray-300 hover:bg-gray-800/50"
+                  }`}
+                >
+                  <Music className="mr-3 h-5 w-5 text-green-400" />
+                  Recommendations
+                </Link>
+
+                {/* Profile Link */}
+                <Link
+                  href="/profile"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`flex items-center space-x-3 p-3 rounded-md ${
+                    pathname === "/profile"
+                      ? "bg-gray-800 text-white-1 "
+                      : "text-gray-300 hover:bg-gray-800/50"
+                  }`}
+                >
+                  <span className="text-green-400">
+                    <User className="w-5 h-5" />
+                  </span>
+                  <span>Profile</span>
+                </Link>
+
+                {/* Logout Button */}
+                <Link
+                  href="/logout"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center justify-between w-full p-3 text-red-400 hover:bg-gray-800/50 rounded-md"
+                >
+                  <div className="flex items-center space-x-3">
+                    <LogOut className="w-5 h-5" />
+                    <span>Logout</span>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {popup.show && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="popup-container"
+          >
+            <Popup popup={popup} popupRef={popupRef} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

@@ -1,9 +1,9 @@
 import { connectDB } from "@/lib/connectToDb";
 import User from "@/models/user";
 import RawData from "@/models/rawData";
-import ProcessedData from "@/models/processedData";
+// import ProcessedData from "@/models/processedData";
 import { NextRequest, NextResponse } from "next/server";
-import { processData } from "@/lib/utilsq.backup";
+// import { processData } from "@/lib/utilsq.backup";
 
 export const POST = async (request: NextRequest) => {
   try {
@@ -48,6 +48,10 @@ export const POST = async (request: NextRequest) => {
       rawData = new RawData();
     } else {
       rawData = await RawData.findById(uploadedDataId);
+      if(!rawData){
+        rawData = new RawData()
+       
+      }
     }
 
     if (!rawData) {
@@ -141,58 +145,58 @@ export const GET = async (request: NextRequest) => {
   }
 };
 
-export const PATCH = async (request: NextRequest) => {
-  try {
-    await connectDB();
-    const req = await request.json();
-    const userId = req.userId;
-    const artistData = req.artistData;
-    const trackData = req.trackData;
-    const activeTimes = req.activeTimes;
-    const activeDays = req.activeDays;
-    const activeMonths = req.activeMonths;
+// export const PATCH = async (request: NextRequest) => {
+//   try {
+//     await connectDB();
+//     const req = await request.json();
+//     const userId = req.userId;
+//     const artistData = req.artistData;
+//     const trackData = req.trackData;
+//     const activeTimes = req.activeTimes;
+//     const activeDays = req.activeDays;
+//     const activeMonths = req.activeMonths;
 
-    if (
-      !userId ||
-      !artistData ||
-      !trackData ||
-      !activeTimes ||
-      !activeDays ||
-      !activeMonths
-    )
-      return NextResponse.json({ message: "Bad request" }, { status: 400 });
+//     if (
+//       !userId ||
+//       !artistData ||
+//       !trackData ||
+//       !activeTimes ||
+//       !activeDays ||
+//       !activeMonths
+//     )
+//       return NextResponse.json({ message: "Bad request" }, { status: 400 });
 
-    const user = await User.findById(userId);
-    if (!user)
-      return NextResponse.json(
-        { message: "Not found" },
-        { status: 404, statusText: "User not found" }
-      );
+//     const user = await User.findById(userId);
+//     if (!user)
+//       return NextResponse.json(
+//         { message: "Not found" },
+//         { status: 404, statusText: "User not found" }
+//       );
 
-    let processedData = await ProcessedData.findOne({ userId });
-    if (!processedData) {
-      processedData = new ProcessedData();
-    }
+//     let processedData = await ProcessedData.findOne({ userId });
+//     if (!processedData) {
+//       processedData = new ProcessedData();
+//     }
 
-    processedData.userId;
-    processedData.artistData;
-    processedData.trackData;
-    processedData.activeTimes;
-    processedData.activeDays;
-    processedData.activeMonths;
+//     processedData.userId;
+//     processedData.artistData;
+//     processedData.trackData;
+//     processedData.activeTimes;
+//     processedData.activeDays;
+//     processedData.activeMonths;
 
-    await processedData.save();
-    user.uploads.processedData = processedData._id;
-    user.uploads.processed = true;
-    await user.save();
-    return NextResponse.json({ message: "Success" }, { status: 200 });
-  } catch (error: any) {
-    console.log("patch upload", error.message);
-    return NextResponse.json(
-      {
-        message: error.message || "Internal server error",
-      },
-      { status: 500 }
-    );
-  }
-};
+//     await processedData.save();
+//     user.uploads.processedData = processedData._id;
+//     user.uploads.processed = true;
+//     await user.save();
+//     return NextResponse.json({ message: "Success" }, { status: 200 });
+//   } catch (error: any) {
+//     console.log("patch upload", error.message);
+//     return NextResponse.json(
+//       {
+//         message: error.message || "Internal server error",
+//       },
+//       { status: 500 }
+//     );
+//   }
+// };

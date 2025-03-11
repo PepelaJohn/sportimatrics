@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { numRange } from "@/app/(Navbar)/(root)/insights/page";
+import { NumRange } from "@/app/(Navbar)/(root)/insights/page";
 
 const frameworks = [
   {
@@ -47,13 +47,13 @@ export function ComboboxDemo({
   num,
   setNum,
 }: {
-  num: numRange;
-  setNum: React.Dispatch<React.SetStateAction<numRange>>;
+  num: NumRange;
+  setNum: React.Dispatch<React.SetStateAction<NumRange>>;
 }) {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
 
-  const [number, setNumber] = React.useState<numRange>(5);
+  const [number, setNumber] = React.useState<NumRange>(5);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -61,7 +61,7 @@ export function ComboboxDemo({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between border-gray-700"
+          className="w-[200px] justify-between text-white-2 border-gray-700"
         >
           {value
             ? frameworks.find((framework) => framework.value === value)?.label
@@ -78,10 +78,10 @@ export function ComboboxDemo({
                 type="number"
                 min={5}
                 max={20}
-                className="w-full border bg-transparent h-8"
+                className="w-full border text-white-2  bg-transparent h-8"
                 value={number}
                 onChange={(e) =>
-                  setNumber(e.target.value as unknown as numRange)
+                  setNumber(e.target.value as unknown as NumRange)
                 }
               />
             </CommandGroup>
