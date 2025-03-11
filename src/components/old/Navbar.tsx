@@ -75,7 +75,7 @@ const NavBar = () => {
       <nav
         className={`w-full ${
           pathname === "/" ? " bg-black-3 " : "bg-black-3 shadow-2xl "
-        } easeinOut justify-center  !z-50 text-white   text-12 fixed top-0 left-0 right-0 h-[100px] flex items-center`}
+        } easeinOut justify-center  !z-50 text-white-1   text-12 fixed top-0 left-0 right-0 h-[100px] flex items-center`}
       >
         <div className="max-w-5xl   max-sm:px-4 sm:px-14  w-full h-full flex items-center ">
           <Link

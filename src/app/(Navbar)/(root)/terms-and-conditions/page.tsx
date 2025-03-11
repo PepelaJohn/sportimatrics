@@ -8,7 +8,7 @@ import Head from 'next/head';
 
 const TermsAndConditionsPage = () => {
   const router = useRouter();
-  
+    
   return (
 
     <>
@@ -23,7 +23,7 @@ const TermsAndConditionsPage = () => {
         <meta name="author" content="Musimeter Team" />
       </Head>
     
-    <div className="min-h-screen nav-height bg-gradient-to-b from-black to-green-900 p-4 md:p-8">
+    <div className="min-h-screen nav-height  p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         <button 
           onClick={() => router.back()} 
@@ -122,7 +122,7 @@ const TermsAndConditionsPage = () => {
             <section>
               <h2 className="text-xl font-semibold text-green-400 mb-3">8. Changes to Terms</h2>
               <p>
-                We reserve the right to modify or replace these Terms at any time. If a revision is material, we will try to provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
+                We reserve the right to modify or replace these Terms at any time. If a revision is material, we will try to provide at least 30 days&apos; notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
               </p>
             </section>
             

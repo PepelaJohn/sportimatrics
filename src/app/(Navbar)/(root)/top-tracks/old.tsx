@@ -92,7 +92,7 @@ export default function TopSongs({
                   onClick={() => setSelected(index as 0 | 1 | 2)}
                   className={`flex items-center justify-center px-1 easeinOut shadow rounded-xl border border-gray-800 text-xs max-[400px]:text-[10px] min-w-[65px] cursor-pointer h-[25px] ${
                     selected === index
-                      ? "bg-green-400 text-white"
+                      ? "bg-green-400 text-white-1 "
                       : "bg-black-3 text-white-3 "
                   }`}
                   key={index}

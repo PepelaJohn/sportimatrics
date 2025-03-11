@@ -9,7 +9,7 @@ type ActionProps = {
 
 type UserProps = Record<string | number | symbol, any>;
 
-export default (user: UserProps = {}, action: ActionProps) => {
+const fxt = (user: UserProps = {}, action: ActionProps) => {
   if (typeof window !== "undefined") {
     const storedUser = localStorage.getItem("user");
     user = storedUser ? JSON.parse(storedUser) : {};
@@ -42,3 +42,7 @@ export default (user: UserProps = {}, action: ActionProps) => {
       return user;
   }
 };
+
+
+
+export default fxt

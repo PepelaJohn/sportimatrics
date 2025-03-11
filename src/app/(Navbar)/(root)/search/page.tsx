@@ -60,14 +60,14 @@ const ResultCard = ({
             className="m-4 p-3 bg-green-500 hover:bg-green-400 rounded-full shadow-lg transition-transform duration-300 hover:scale-110"
             onClick={() => window.open(`spotify:${uri}`, '_blank')}
           >
-            <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="h-6 w-6 text-white-1 " fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>
           </button>
         </div>
       </div>
       <div className="p-4 flex-grow">
-        <h3 className="text-white font-bold text-lg truncate">{name}</h3>
+        <h3 className="text-white-1 font-bold text-lg truncate">{name}</h3>
         <p className="text-zinc-400 text-sm truncate">{subtitle}</p>
         {durationMs && (
           <p className="text-zinc-500 text-xs mt-2">{formatDuration(durationMs)}</p>
@@ -83,7 +83,7 @@ const ResultSection = ({ title, items, renderItem }: { title: string; items: any
   return (
     <section className="w-full mb-12">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl md:text-2xl font-bold text-white">{title}</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-white-1 ">{title}</h2>
         <div className="h-px bg-zinc-700 flex-grow ml-4 mr-2"></div>
         <span className="text-zinc-400 text-sm">{items.length} results</span>
       </div>
@@ -154,9 +154,9 @@ export default function TopSongs({
           height={200} 
           className="mb-6 opacity-70"
         />
-        <h2 className="text-2xl font-bold text-white mb-2">No results found</h2>
+        <h2 className="text-2xl font-bold text-white-1 mb-2">No results found</h2>
         <p className="text-zinc-400 text-center max-w-md">
-          We couldn't find anything for "{searchParams.q}". 
+          We couldn&apos;t find anything for &quot;{searchParams.q}&quot;. 
           Try different keywords or check spelling.
         </p>
         <button 
@@ -170,18 +170,18 @@ export default function TopSongs({
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div className="w-full nav-height max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="mb-10"
       >
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white-1 mb-2">
           Search Results
         </h1>
         <p className="text-zinc-400">
-          for "<span className="text-green-500 font-medium">{searchParams.q}</span>"
+          for &quot;<span className="text-green-500 font-medium">{searchParams.q}</span>&quot;
         </p>
       </motion.div>
 

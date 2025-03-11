@@ -6,7 +6,7 @@ export default function CancelPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-green-900 text-white flex items-center justify-center p-4">
+    <div className="min-h-screen  text-white-1 flex items-center justify-center p-4">
       <div className="bg-black bg-opacity-60 rounded-xl shadow-2xl p-8 max-w-md w-full backdrop-blur-sm border border-gray-500 border-opacity-20 text-center">
         <div className="mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-800 bg-opacity-50 text-gray-400 text-3xl">
@@ -25,7 +25,7 @@ export default function CancelPage() {
         <div className="flex flex-col gap-4 justify-center">
           <Button 
             onClick={() => router.push("/donate")} 
-            className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-green-500/30 w-full"
+            className="bg-green-500 hover:bg-green-600 text-white-1 px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-green-500/30 w-full"
           >
             Try Again
           </Button>

@@ -34,7 +34,7 @@ const SuccessPage = () => {
   }, [transactionId, userId, amount]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-green-900 text-white flex items-center justify-center p-4">
+    <div className="min-h-screen  text-white-1 flex items-center justify-center p-4">
       <div className="bg-black bg-opacity-60 rounded-xl shadow-2xl p-8 max-w-md w-full backdrop-blur-sm border border-green-500 border-opacity-20">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center">
@@ -48,7 +48,7 @@ const SuccessPage = () => {
             <p className="mb-4">{error}</p>
             <button 
               onClick={() => router.push("/dashboard")} 
-              className="mt-4 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-green-500/30"
+              className="mt-4 bg-green-500 hover:bg-green-600 text-white-1 px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-green-500/30"
             >
               Return to Dashboard
             </button>
@@ -71,7 +71,7 @@ const SuccessPage = () => {
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               <button 
                 onClick={() => router.push("/")} 
-                className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-green-500/30 flex items-center justify-center"
+                className="bg-green-500 hover:bg-green-600 text-white-1 px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-green-500/30 flex items-center justify-center"
               >
                 <span>Go to Dashboard</span>
               </button>

@@ -1,5 +1,5 @@
 import NavBar from "@/components/Navbar";
-
+import CookieConsent from "@/components/CookieConsent";
 
 
 export default function RootLayout({
@@ -11,6 +11,7 @@ export default function RootLayout({
     <>
       <NavBar />
       {children}
+      <CookieConsent></CookieConsent>
     </>
   );
 }

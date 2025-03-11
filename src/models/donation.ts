@@ -14,7 +14,7 @@ interface IDonation extends Document {
       amount: { type: Number, required: true },
       currency: { type: String, default: "USD" },
       transactionId: { type: String, required: true, unique: true },
-      status: { type: String, enum: ["pending", "completed", "failed"], default: "pending" },
+      status: { type: String, enum: ["pending", "completed", "failed", "refunded"], default: "pending" },
     },
     { timestamps: true }
   );

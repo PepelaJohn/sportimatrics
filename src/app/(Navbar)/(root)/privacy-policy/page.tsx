@@ -27,11 +27,11 @@ const PrivacyPolicyPage = () => {
         <meta name="author" content="MusimeterTeam" />
       </Head>
 
-      <div className="min-h-screen nav-height bg-gradient-to-b from-black to-green-900 p-4 md:p-8">
+      <div className="min-h-screen nav-height  p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
           <button
             onClick={() => (window.history.length > 1 ? router.back() : router.push('/'))}
-            className="mb-8 text-gray-300 hover:text-white flex items-center gap-2 transition-colors"
+            className="mb-8 text-gray-300 hover:text-white-1 flex items-center gap-2 transition-colors"
             aria-label="Go back to the previous page"
           >
             <ChevronLeft size={18} />
@@ -43,14 +43,14 @@ const PrivacyPolicyPage = () => {
               <div className="w-12 h-12 bg-green-900 bg-opacity-50 rounded-full flex items-center justify-center">
                 <ShieldCheck size={24} className="text-green-400" />
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white">Privacy Policy</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-white-1 ">Privacy Policy</h1>
             </div>
 
             <div className="space-y-8 text-gray-300">
               <section>
                 <h2 className="text-xl font-semibold text-green-400 mb-3">1. Introduction</h2>
                 <p>
-                  This Privacy Policy explains how Musimeter("we," "our," or "us") collects, uses, and protects your data when using our service.
+                  This Privacy Policy explains how Musimeter(&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) collects, uses, and protects your data when using our service.
                 </p>
               </section>
 

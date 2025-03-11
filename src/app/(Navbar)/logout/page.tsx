@@ -15,7 +15,7 @@ const LogoutComponent = () => {
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-green-900 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="bg-black bg-opacity-60 backdrop-blur-md rounded-xl shadow-2xl p-8 max-w-md w-full border border-gray-500 border-opacity-20 text-center">
         <div className="mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-800 bg-opacity-50 text-gray-300 text-3xl">

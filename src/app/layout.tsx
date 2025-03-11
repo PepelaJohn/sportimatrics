@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   keywords: ["Spotify history", "Spotify tracking", "music analytics", "listening habits"],
   authors: [
     { name: "Musimeter Team", url: "https://musimeter.site" },
-    { name: "Musimeter on Instagram", url: "https://instagram.com/musimeter" },
-    { name: "Musimeter on Twitter", url: "https://twitter.com/musimeter" },
+    { name: "Musimeter on Instagram", url: "https://www.instagram.com/musimeter_official/" },
+    { name: "Musimeter on Twitter", url: "https://x.com/musimeter_inc" },
   ],
 
   icons: {
@@ -49,6 +49,10 @@ export const metadata: Metadata = {
   robots: "index, follow",
 };
 
+import GlobalLoader from '@/components/GlobalLoader'
+import { Suspense } from "react";
+import ErrorBoundary from "@/components/ErrorBoundary";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -73,7 +77,14 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={manrope.className}>
-        <StoreProvider>{children}</StoreProvider>
+        <ErrorBoundary>
+        <StoreProvider>
+            <Suspense fallback={<GlobalLoader></GlobalLoader>}>
+
+          {children}
+            </Suspense>
+          </StoreProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

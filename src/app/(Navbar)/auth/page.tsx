@@ -47,12 +47,12 @@ const LoginPage = () => {
         "+"
       )}&code_challenge_method=S256&code_challenge=${codeChallenge}&redirect_uri=${redirectUri}&show_dialog=true`;
 
-    const url = (authUrl + querystring) as unknown as Location;
-    window.location = url;
+    const url = (authUrl + querystring);
+    window.location.href = url;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-green-900 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen  flex flex-col items-center justify-center p-4">
       <div className="bg-black bg-opacity-60 backdrop-blur-md rounded-xl shadow-2xl p-8 max-w-md w-full border border-green-500 border-opacity-20">
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 border-2 border-green-500 rounded-full flex items-center text-white-1 justify-center mb-4 shadow-lg shadow-green-500/30">
@@ -69,7 +69,7 @@ const LoginPage = () => {
 
         <button
           onClick={loginWithSpotify}
-          className="w-full bg-green-500 hover:bg-green-600 text-black font-bold py-4 px-6 rounded-full transition-all duration-300 shadow-lg hover:shadow-green-500/30 flex items-center justify-center gap-2 transform hover:scale-[1.02]"
+          className="w-full bg-green-500 hover:bg-green-600 text-black font-bold py-4 px-6 rounded-full transition-all duration-300 shadow-lg hover:shadow-green-500/30 flex items-center justify-center gap-2 transform "
         >
           <RiSpotifyFill size={20} className="text-black" />
           <span>Continue with Spotify</span>

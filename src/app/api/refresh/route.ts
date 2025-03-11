@@ -12,7 +12,8 @@ export const POST = async (request: NextRequest) => {
     let refresh_token = cookies().get("_gtPaotwcsR");
     if (!refresh_token) {
       let user = await User.findOne({ email: req.email });
-      refresh_token = user.refresh_token;
+      if(!user) return NextResponse.json({message:"Failed to fetch user"},{status:404})
+      refresh_token = user.refresh_token as any;
     }
     return NextResponse.json({
       refresh_token,

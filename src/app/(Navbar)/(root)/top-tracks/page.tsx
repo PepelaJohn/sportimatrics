@@ -10,11 +10,16 @@ import { ChevronDown, Music, Users } from "lucide-react";
 import PopularityIndicator from "@/components/PopularityIndicator";
 import { formatNumberWithCommas } from "@/lib/utils";
 import TrackCardSkeleton from "@/components/TrackCardSkeleton";
+import Link from "next/link";
 
 // Types
 type TimeRange = "short_term" | "medium_term" | "long_term";
 type TimeRangeIndex = 0 | 1 | 2;
-type Artist = { name: string; uri: string };
+type Artist = { 
+  name: string; 
+  uri: string; 
+  id: string; // Added id field for artist navigation
+};
 type Image = { url: string; height: number; width: number };
 type Album = { images: Image[]; name: string; uri: string };
 type TrackType = {
@@ -31,46 +36,56 @@ const TimeRangeOptions = [
   { value: "long_term", label: "Long-time ", index: 2 as TimeRangeIndex, description:"Last 1 Year" },
 ];
 
-// Skeleton loader for track cards
-
-
 // Track card component
 const TrackCard = ({ track, index, selected }: { track: TrackType; index: number, selected:"List"|"Card"  }) => {
+  const router = useRouter();
   const thumbnailUrl =
     track.album.images.length > 1
       ? track.album.images[1].url
       : track.album.images[0]?.url;
+  
+  const handleArtistClick = (e: React.MouseEvent, artistId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/artist/${artistId}`);
+  };
+
+  // Extract artist ID from URI (format: spotify:artist:id)
+  const getArtistIdFromUri = (uri: string) => {
+    return uri.split(':')[2];
+  };
 
   return (
-    <motion.a
-      href={track.uri}
-      target="_blank"
+    <motion.div
+    
       className="group bg-gray-900 rounded-xl overflow-hidden border border-gray-800 shadow-lg hover:shadow-green-900/20 hover:border-gray-700 transition-all duration-300 transform"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
-      whileHover={{ scale: 1.02 }}
+      // whileHover={{ scale: 1.02 }}
     >
-      <div className={`${selected === "List"?"":"aspect-square "} sm:aspect-square overflow-hidden relative`}>
-        <img
+      <div  className={`${selected === "List"?"":"aspect-square "} sm:aspect-square overflow-hidden relative`}>
+       <a className="w-full h-full" href={track.uri} target="_blank">
+       <img
           src={thumbnailUrl}
           alt={track.name}
           className={`w-full  object-cover transition-transform duration-500 group-hover:scale-110 easeinOut ${selected === "List" ? "h-0" : "h-full"} sm:h-full`}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-40 transition-opacity duration-300"></div>
 
-        <div className="absolute bottom-2 left-2 right-2 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="absolute bottom-2 left-2 right-2 text-white-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div className="text-xs font-medium flex gap-1">
             <span className="bg-black/50 backdrop-blur-sm px-2 py-1 bg-green-400 rounded-full">
               #{index + 1}
             </span>
           </div>
         </div>
+       </a>
       </div>
 
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h2 className="text-white font-bold text-lg truncate pr-2">
+          <h2 className="text-white-1 font-bold text-lg truncate pr-2">
             <span className={` text-gray-1 ${selected === "List" ? "inline" : "hidden"} max-sm:inline`}>{index + 1} - </span> {track.name}
           </h2>
           <span className="text-xs text-green-400 font-semibold bg-green-400/10 px-2 py-0.5 rounded-full">
@@ -82,11 +97,21 @@ const TrackCard = ({ track, index, selected }: { track: TrackType; index: number
           <Users className="h-3.5 w-3.5" />
 
           <p className="text-white-4 text-xs text-center mt-1 line-clamp-2">
-            {track.artists.map((artist) => artist.name).join(", ")}
+            {track.artists.map((artist, i) => (
+              <React.Fragment key={artist.uri}>
+                {i > 0 && ", "}
+                <Link 
+                href={`artist/${getArtistIdFromUri(artist.uri)}`}
+                  className="hover:!text-green-400 cursor-pointer transition-colors duration-200"
+                >
+                  {artist.name}
+                </Link>
+              </React.Fragment>
+            ))}
           </p>
         </div>
       </div>
-    </motion.a>
+    </motion.div>
   );
 };
 
@@ -139,7 +164,17 @@ export default function TopSongs({
           20,
           0
         );
-        setTopTracks(tracks);
+        
+        // Ensure each artist has an ID (extracted from URI if necessary)
+        const tracksWithArtistIds = tracks.map((track:any) => ({
+          ...track,
+          artists: track.artists.map((artist:any) => ({
+            ...artist,
+            id: artist.uri.split(':')[2] // Extract ID from URI if not already present
+          }))
+        }));
+        
+        setTopTracks(tracksWithArtistIds);
         router.push(`/top-tracks?range=${timeRange}`);
       } catch (error) {
         console.error("Failed to fetch top tracks:", error);
@@ -174,7 +209,7 @@ export default function TopSongs({
                 animate={{ x: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-white-1 flex items-center gap-2">
                   <Music className="h-7 w-7 text-green-400" />
                   Your Top Tracks
                 </h1>
@@ -193,8 +228,8 @@ export default function TopSongs({
                     px-4 py-2 ${index===0?"rounded-l-full":index===2 ?"rounded-r-full":"rounded-none"}  text-sm font-medium transition-all duration-300
                     ${
                       selectedRange === option.index
-                        ? "bg-green-600 text-white shadow-md"
-                        : "bg-transparent text-gray-400 hover:text-white hover:bg-gray-800"
+                        ? "bg-green-600 text-white-1 shadow-md"
+                        : "bg-transparent text-gray-400 hover:text-white-1 hover:bg-gray-800"
                     }
                   `}
                       // whileHover={{ scale: 1.05 }}
@@ -225,7 +260,7 @@ export default function TopSongs({
                         {options.map((option:any) => (
                           <button
                             key={option}
-                            className="w-full px-4 py-2 text-left text-white hover:bg-gray-800 transition"
+                            className="w-full px-4 py-2 text-left text-white-1 hover:bg-gray-800 transition"
                             onClick={() => {
                               setSelected(option);
                               setOpen(false);

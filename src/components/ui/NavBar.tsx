@@ -28,7 +28,7 @@ const NavBar = () => {
     "Podcasts",
   ];
   return (
-    <nav className="w-full justify-center  z-50 text-white   text-xs fixed top-0 left-0 right-0 h-[100px] flex items-center">
+    <nav className="w-full justify-center  z-50 text-white-1   text-xs fixed top-0 left-0 right-0 h-[100px] flex items-center">
       <div className="max-w-5xl  w-full h-full flex items-center ">
         <Link
           href={"/"}

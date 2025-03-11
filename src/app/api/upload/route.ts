@@ -1,9 +1,9 @@
 import { connectDB } from "@/lib/connectToDb";
 import User from "@/models/user";
 import RawData from "@/models/rawData";
-import ProcessedData from "@/models/processedData";
+// import ProcessedData from "@/models/processedData";
 import { NextRequest, NextResponse } from "next/server";
-import { processData } from "@/lib/utilsq.backup";
+// import { processData } from "@/lib/utilsq.backup";
 
 export const POST = async (request: NextRequest) => {
   try {
@@ -48,6 +48,10 @@ export const POST = async (request: NextRequest) => {
       rawData = new RawData();
     } else {
       rawData = await RawData.findById(uploadedDataId);
+      if(!rawData){
+        rawData = new RawData()
+       
+      }
     }
 
     if (!rawData) {
