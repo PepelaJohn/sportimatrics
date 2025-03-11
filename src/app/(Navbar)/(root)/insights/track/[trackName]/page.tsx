@@ -1,6 +1,7 @@
 "use client";
 import BarChart from "@/components/BarChart";
 import DialogCloseButton from "@/components/Dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Info, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -23,13 +24,15 @@ type TrackDataT = {
   periods: PeriodT[];
 }
 
-const page = () => {
+const Page:React.FC = () => {
   const router = useRouter();
   const link = window.location.href.split("/");
 
+
+const [isLoading, setIsLoading] = useState(true);
   let location = link[link.length - 1];
   location = location.split("%20").join(" ")
-  const [data, setData] = useState([]);
+  // const [data, setData] = useState([]);
 
   const [processedData, setProcessedData] = useState<TrackDataT[] | null>(
     null
@@ -40,6 +43,7 @@ const page = () => {
     values: number[] ;
   } | null>(null);
   const searchArtistByName = (name: string) => {
+    console.log(processedData)
     const artist = processedData!?.find(
       (track) => track?.trackName?.toLowerCase() === name.toLowerCase()
     );
@@ -58,17 +62,19 @@ const page = () => {
       
       if (dt !== null) {
         dt2 = JSON.parse(dt);
+        console.log(dt2)
+        setProcessedData(dt2);
+        setIsLoading(false)
       }
       
       
-      setProcessedData(dt2);
     }
   }, []);
 
   useEffect(() => {
     
     const ArtistProcessed = searchArtistByName(location);
-
+    console.log(ArtistProcessed, location)
 
     const labels =
       ArtistProcessed !== null
@@ -88,38 +94,61 @@ const page = () => {
 
  
   }, [processedData]);
+  const handleClose = () => {
+    router.back();
+  };
 
   return (
-    <div className="min-h-screen h-full  w-full max-w-full gap-5 flex mb-5 flex-col items-center px-2  text-gray-100">
-      <div className="nav-height w-full"></div>
-      
-      <div className=" border border-gray-800 bg-gray-900  lg:max-w-[800px]  w-full  lg:p-10 py-3 flex flex-col overflow-hidden items-center justify-center ">
-        <div className="flex   items-center justify-center gap-5 w-full h-full my-4">
-     
-
-          <DialogCloseButton
-            heading={`${location}`}
-            text={`These are the periods you listened to ${location} and the minutes corresponding to the periods.`}
-          >
-            <span className="text-green-400 cursor-pointer">
-              <Info className="w-4"></Info>
-            </span>
-          </DialogCloseButton>
-        
+    <Dialog open={true} onOpenChange={handleClose}>
+    <DialogContent className=" text-white-1 border-0 rounded-xl max-w-md md:max-w-2xl w-full mx-auto p-0 overflow-hidden">
+      <div className="flex flex-col w-full">
+        <div className="bg-gradient-to-r from-green-500 to-green-600 p-4 flex items-center justify-between">
+          <DialogTitle className="text-lg md:text-xl font-bold">
+            {location}
+          </DialogTitle>
         </div>
-        { 
-          <>
-            {chartData === null ? (
-              <Loader className="animate-spin text-green-400" size={30} />
-            ) : (
-              <BarChart data={chartData}  />
-            )}
-          </>
-        }
-    
+        <div className="p-4 md:p-6">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader className="h-8 w-8 text-green-500 animate-spin" />
+              <p className="mt-4 text-sm text-gray-400">Loading data...</p>
+            </div>
+          ) : chartData === null ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Info className="h-10 w-10 text-green-500 mb-4" />
+              <h3 className="text-lg font-medium mb-2">No Data Available</h3>
+              <p className="text-sm text-gray-400 max-w-xs">
+                We couldn&apos;t find any listening data. Try searching another name.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Listening Activity</h3>
+                <p className="text-sm text-gray-400">Minutes listened over the past months</p>
+              </div>
+              <div className="h-64">
+                <BarChart data={chartData} />
+              </div>
+              <div className="bg-gray-900 rounded-lg p-4 flex items-center space-x-3">
+                <div className="bg-green-500 rounded-full p-2">
+                  <Info size={16} className="text-black" />
+                </div>
+                <div>
+                  <p className="text-sm">
+                    Total listening time: <span className="font-bold">
+                      {Math.round(chartData.values.reduce((a, b) => a + b, 0))} minutes
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </DialogContent>
+  </Dialog>
   );
 };
 
-export default page;
+export default Page;

@@ -58,7 +58,7 @@ export function ComboboxDemo({value, setValue} :Props) {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[100px] justify-between border-gray-700"
+          className="w-[100px] justify-between text-white-2 border-gray-700"
         >
           {value
             ? frameworks.find((framework) => framework.value === value)?.label
@@ -84,7 +84,7 @@ export function ComboboxDemo({value, setValue} :Props) {
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "mr-2 h-4 w-4 text-white-2",
                       value === framework.value ? "opacity-100" : "opacity-0"
                     )}
                   />
