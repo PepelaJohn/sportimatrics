@@ -97,8 +97,8 @@ export async function POST(req: NextRequest) {
           },
         ],
         application_context: {
-          return_url: "http://localhost:3000/donate/success",
-          cancel_url: "http://localhost:3000/donate/cancel",
+          return_url: `${process.env.URL}/donate/success`,
+          cancel_url: `${process.env.URL}/donate/cancel`,
         },
       };
       console.log(PAYPAL_CLIENT_ID, PAYPAL_SECRET)

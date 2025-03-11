@@ -13,7 +13,6 @@ const apiUrl = new URL("https://accounts.spotify.com/api/token");
 const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID!;
 const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_URI!;
 
-//https://accounts.spotify.com/en/authorize?response_type=code&client_id=0430499af2784a53b2ac15f5dae104f2&scope=user-read-private+user-read-email&code_challenge_method=S256&code_challenge=IT2Z_WJTTlrvBJjnNDIV6R8Nv9nWCi1-G5gcZrR6aXE&redirect_uri=http%3A%2F%2Flocalhost%3A3000
 // =================================REQUESTING AUTH============================================
 export const generateRandomString = (length: number) => {
   const possible =
@@ -90,7 +89,7 @@ const getRefreshToken = async (email: string) => {
     };
 
     const promiseData = await fetch(
-      "http://localhost:3000/api/refresh",
+      `${process.env.NEXT_PUBLIC_URL}/api/refresh`,
       payload
     );
     const data = await promiseData.json();
@@ -138,7 +137,7 @@ const renewAccessToken = async (
       }),
     };
 
-    await fetch("http://localhost:3000/api/refresh", payload);
+    await fetch(`${process.env.NEXT_PUBLIC_URL}/api/refresh`, payload);
     window.location.reload();
   }
 
@@ -208,7 +207,7 @@ export const Logout = async (
       };
 
       const promiseData = await fetch(
-        "http://localhost:3000/api/logout",
+        `${process.env.NEXT_PUBLIC_URL}/api/logout`,
         payload
       );
       const data = await promiseData.json();
@@ -221,7 +220,7 @@ export const Logout = async (
         cookie.remove("_gtPaotwcsA");
         dispatch({ type: SUCCESS, payload: "Logged Out" });
         if (typeof window !== "undefined" && typeof window !== undefined) {
-          window.location.href = "http://localhost:3000";
+          window.location.href = process.env.NEXT_PUBLIC_URL!;
         }
       }
     }
@@ -337,7 +336,7 @@ export const uploadToDB = async (formData: { [key: string]: any }) => {
     };
 
     const promiseData = await fetch(
-      "http://localhost:3000/api/upload",
+      `${process.env.NEXT_PUBLIC_URL}/api/upload`,
       payload
     );
     const data = await promiseData.json();
@@ -360,7 +359,7 @@ export const getFormDB = async () => {
     };
 
     const promiseData = await fetch(
-      `http://localhost:3000/api/upload?email=${userEmail}`,
+      `${process.env.NEXT_PUBLIC_URL}/api/upload?email=${userEmail}`,
       payload
     );
     const data = await promiseData.json();
