@@ -1,0 +1,37 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nextjs_app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/musimeter
+    networks:
+      - spotiapp
+ 
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: mydatabase
+    networks:
+      - spotiapp
+
+volumes:
+  mongodb_data:
+networks:
+  spotiapp:
+    driver: bridge

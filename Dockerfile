@@ -1,22 +1,21 @@
-
-FROM node:22-alpine AS base
-WORKDIR /src
-COPY package*.json .
-RUN npm install 
-COPY . . 
+# Base image for building
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --frozen-lockfile --production
+COPY . .
 RUN npm run build
 
+# Production-ready image
+FROM node:22-alpine AS production
+WORKDIR /app
 
-
-FROM base AS production
-WORKDIR /src
-# Copy only required files
-COPY --from=base /src/.next ./.next
-COPY --from=base /src/node_modules ./node_nodules
-COPY --from=base /src/package.json ./package.json
-COPY --from=base /src/public ./public
+# Copy only necessary files from the builder
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/public ./public
 COPY --from=base /src/package-lock.json ./package-lock.json
-
 
 
 EXPOSE 3000
