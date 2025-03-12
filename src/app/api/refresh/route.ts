@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 
 export const POST = async (request: NextRequest) => {
   try {
-    connectDB();
+    await connectDB();
     const req = await request.json();
     //console.log(req.email);
 
@@ -25,7 +25,7 @@ export const POST = async (request: NextRequest) => {
 
 export const PATCH = async (request: NextRequest) => {
   try {
-    connectDB();
+    await connectDB();
     const req = await request.json();
     if (!req.refresh_token) return NextResponse.json({ status: 400 });
     const user = await User.findOne({ email: req.email });

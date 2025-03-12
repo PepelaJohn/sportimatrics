@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
 import "./globals.css";
 import StoreProvider from "@/redux/store/StoreProvider";
 import Script from "next/script";
-const manrope = Manrope({ subsets: ["latin"] });
+
 
 const metadataBase =
   process.env.NODE_ENV === "production"
@@ -76,7 +75,7 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className={manrope.className}>
+      <body >
         <ErrorBoundary>
         <StoreProvider>
             <Suspense fallback={<GlobalLoader></GlobalLoader>}>

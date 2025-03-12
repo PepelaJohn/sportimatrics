@@ -5,6 +5,7 @@ import { ConnectOptions } from "mongoose";
 const connection = { isConnected: false };
 
 async function connectDB() {
+  console.log('tryiung to connect')
   try {
     if (connection.isConnected) {
       console.log("Using existing connection");
