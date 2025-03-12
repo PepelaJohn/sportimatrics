@@ -18,11 +18,14 @@ FROM node:22-alpine AS production
 
 WORKDIR /src
 
-# Copy only necessary files from build stage
+# Copy only required files
 COPY --from=build /src/.next ./.next
-COPY --from=build /src/node_modules ./node_modules
 COPY --from=build /src/package.json ./package.json
 COPY --from=build /src/public ./public
 
+# Install only production dependencies
+RUN npm install --production
+
 EXPOSE 3000
 CMD ["npm", "start"]
+
