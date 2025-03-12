@@ -20,23 +20,23 @@ services:
  
     restart: unless-stopped
 
-    mongodb:
-      image: mongo:6
-      container_name: mongodb
-      ports:
-        - "27017:27017"
-      volumes:
-        - mongodb_data:/data/db
-      restart: unless-stopped
-      environment:
-        MONGO_INITDB_DATABASE: mydatabase
-      networks:
-        - spotiapp
-      healthcheck:
-        test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })"]
-        interval: 10s
-        retries: 5
-        start_period: 5s
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: mydatabase
+    networks:
+      - spotiapp
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
 
 
 volumes:
