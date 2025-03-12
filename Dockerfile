@@ -1,31 +1,23 @@
-# Build stage
-FROM node:22-alpine AS build
 
+FROM node:22-alpine AS base
 WORKDIR /src
-
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm install --frozen-lockfile --production
-
-# Copy the rest of the project
+COPY package*.json .
+RUN npm install 
 COPY . . 
-
-# Build the project
 RUN npm run build
 
-# Production stage
-FROM node:22-alpine AS production
 
+
+FROM base AS production
 WORKDIR /src
-
 # Copy only required files
-COPY --from=build /src/.next ./.next
-COPY --from=build /src/package.json ./package.json
-COPY --from=build /src/public ./public
+COPY --from=base /src/.next ./.next
+COPY --from=base /src/node_modules ./node_nodules
+COPY --from=base /src/package.json ./package.json
+COPY --from=base /src/public ./public
+COPY --from=base /src/package-lock.json ./package-lock.json
 
-# Install only production dependencies
-RUN npm install --production
+
 
 EXPOSE 3000
 CMD ["npm", "start"]
-

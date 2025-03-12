@@ -1,6 +1,6 @@
 "use client";
-import { ERROR, SIGN_OUT, SUCCESS } from "@/constants";
-import { getCookie } from "@/lib/utils";
+import { ERROR, SIGN_OUT, SUCCESS } from "../constants";
+import { getCookie } from "../lib/utils";
 import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
