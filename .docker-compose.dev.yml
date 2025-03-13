@@ -2,24 +2,36 @@ version: '3.8'
 
 services:
   app:
-    image: node:14
-    working_dir: /app
-    volumes:
-      - .:/app
-      - /app/node_modules
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - '3000:3000'
+      - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - MONGODB_URI=mongodb://mongo:27017/mydatabase
-    command: sh -c "npm install && npm run dev"
+      - MONGODB_URI=mongodb://mongodb:27017/simeter
+    depends_on:
+      - mongodb
+    restart: unless-stopped
 
-  mongo:
-    image: mongo:4.4
+  nginx:
+    image: nginx:latest
     ports:
-      - '27017:27017'
+      - "80:80"
+      - "443:443"
     volumes:
-      - mongo-data:/data/db
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - /etc/letsencrypt:/etc/letsencrypt:ro  # Mount Certbot SSL certificates
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"  # Optional: expose only if you need external access
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
 
 volumes:
-  mongo-data:
+  mongodb_data:
