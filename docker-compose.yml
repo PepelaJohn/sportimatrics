@@ -5,8 +5,6 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: app
-    ports:
-      - "3000:3000"
     depends_on:
       - mongodb
     env_file:
@@ -29,20 +27,7 @@ services:
     networks:
       - musimeter_network
 
-  nginx:
-    image: nginx:latest
-    container_name: nginx_reverse_proxy
-    depends_on:
-      - app
-    ports:
-      - "8080:80"
-      - "8443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-    networks:
-      - musimeter_network
-    restart: unless-stopped
+  
 
 volumes:
   mongodb_data:
